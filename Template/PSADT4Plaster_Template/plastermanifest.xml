@@ -1,0 +1,596 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<plasterManifest
+  schemaVersion="1.2"
+  templateType="Project"
+  xmlns="http://www.microsoft.com/schemas/PowerShell/Plaster/v1">
+  <metadata>
+    <name>PSADT4Plaster</name>
+    <id>a5a8eb81-7f8c-46dc-9530-53d0891ffe11</id>
+    <version>0.1</version>
+    <title>PSADT 4 Plaster Template</title>
+    <description>Assists with the creation and automation of PSADT packages</description>
+    <author>Github.com/Zebulonsmith</author>
+    <tags></tags>
+  </metadata>
+  <parameters>
+    <!--ADTSession-->
+    <parameter
+      name='AppVendor'
+      type='text'
+      prompt='Application publisher'
+    />
+
+    <parameter
+      name='AppName'
+      type='text'
+      prompt='Application name'
+    />
+
+    <parameter
+      name='AppVersion'
+      type='text'
+      prompt='Application version'
+    />
+
+    <parameter
+      name='AppArch'
+      type='choice'
+      default='0'
+      store='text'
+      prompt='Application architecture'>
+        <choice label='&amp;64-bit'
+          help="64-bit Application"
+          value='x64'/>
+        <choice label='&amp;32-bit'
+          help="32-bit Application"
+          value='x86'/>
+    </parameter>
+
+    <parameter
+      name='AppLang'
+      type='text'
+      prompt='Application Language'
+      default='EN'
+    />
+
+    <parameter
+      name='AppRevision'
+      type='text'
+      prompt='Application revision'
+    />
+
+    <parameter
+      name='AppSuccessExitCodes'
+      type='text'
+      prompt='Application success exit codes'
+      default='@(0)'
+    />
+
+    <parameter
+      name='AppRebootExitCodes'
+      type='text'
+      prompt='Application reboot exit codes'
+      default='@(1641, 3010)'
+    />
+
+    <parameter
+      name='AppScriptVersion'
+      type='text'
+      prompt='Application script version'
+      default='1.0.0'
+    />
+
+    <parameter
+      name='AppScriptDate'
+      type='text'
+      prompt='Application script date'
+      default='$([DateTime]::Now.Year)'
+    />
+
+    <parameter
+      name='AppScriptAuthor'
+      type='user-email'
+      prompt='Application script author'
+    />
+
+    <parameter
+      name='InstallTitle'
+      type='text'
+      prompt='Installation title (shown in the PSADT dialog)'
+      default='${PLASTER_PARAM_AppName} ${PLASTER_PARAM_AppVersion}'
+    />
+
+    <parameter
+      name='InstallCompleteDialog'
+      type='text'
+      prompt='Text to show after a completed installation.'
+      default = 'Installation Completed.'
+    />
+
+    <parameter
+      name='InstallTitleFileName'
+      type='text'
+      prompt='File name appended to the package upon creation'
+      default='${PLASTER_PARAM_AppVendor}-${PLASTER_PARAM_AppName}-${PLASTER_PARAM_AppVersion}'
+    />
+
+    <!--Config.psd1-->
+    <!--MSI-->
+    <parameter
+      name='MSIInstallParams'
+      type='text'
+      prompt='Installation parameters (MSI)'
+      default='REBOOT=ReallySuppress /QB-!'
+    />
+
+    <parameter
+      name='MSILoggingOptions'
+      type='text'
+      prompt='Logging options (MSI)'
+      default='/L*V'
+    />
+
+    <parameter
+      name='MSILogPath'
+      type='text'
+      prompt='Log path (MSI)'
+      default='$envWinDir\Logs\Software'
+    />
+
+    <parameter
+      name='MSILogPathNoAdminRights'
+      type='text'
+      prompt='Log path no admin rights (MSI)'
+      default='$envProgramData\Logs\Software'
+    />
+
+    <parameter
+      name='MSIMutexWaitTime'
+      type='text'
+      prompt='Mutex wait time (MSI)'
+      default='600'
+    />
+
+    <parameter
+      name='MSISilentParams'
+      type='text'
+      prompt='Silent parameters (MSI)'
+      default='REBOOT=ReallySuppress /QN'
+    />
+
+    <parameter
+      name='MSIUninstallParams'
+      type='text'
+      prompt='Uninstall parameters (MSI)'
+      default='REBOOT=ReallySuppress /QN'
+    />
+
+    <!--Toolkit-->
+    <parameter
+      name='ToolkitCachePath'
+      type='text'
+      prompt='Toolkit cache path'
+      default='$envProgramData\SoftwareCache'
+    />
+
+    <parameter
+      name='ToolkitCompressLogs'
+      type='choice'
+      default='0'
+      store='text'
+      prompt='Compress logs'>
+      <choice label='&amp;False'
+        help="Compress logs"
+        value='$False'/>
+      <choice label='&amp;True'
+        help="Do not compress logs"
+        value='$True'/>
+    </parameter>
+
+    <parameter
+      name='ToolkitFileCopyMode'
+      type='choice'
+      default='0'
+      store='text'
+      prompt='File copy mode'>
+      <choice label='&amp;Native'
+        help="Powershell native file copy"
+        value='Native'/>
+      <choice label='&amp;Robocopy'
+        help="Use robocopy.exe"
+        value='Robocopy'/>
+    </parameter>
+
+    <parameter
+      name='ToolkitLogAppend'
+      type='choice'
+      default='0'
+      store='text'
+      prompt='Log append'>
+       <choice label='&amp;True'
+        help="Append to log"
+        value='$True'/>
+      <choice label='&amp;False'
+        help="Create a new log"
+        value='$False'/>
+    </parameter>
+
+    <parameter
+      name='ToolkitLogDebugMessage'
+      type='choice'
+      default='1'
+      store='text'
+      prompt='Debug Logging'>
+      <choice label='&amp;True'
+        help="Enable debug messaging"
+        value='$True'/>
+      <choice label='&amp;False'
+        help="Do not enable debug messaging"
+        value='$False'/>
+    </parameter>
+
+    <parameter
+      name='ToolkitLogMaxHistory'
+      type='text'
+      prompt='Maximum log history'
+      default='10'
+    />
+
+    <parameter
+      name='ToolkitLogMaxSize'
+      type='text'
+      prompt='Maximum log size'
+      default='10'
+    />
+
+    <parameter
+      name='ToolkitLogPath'
+      type='text'
+      prompt='Log path'
+      default='$envWinDir\Logs\Software'
+    />
+
+    <parameter
+      name='ToolkitLogPathNoAdminRights'
+      type='text'
+      prompt='Log path no admin rights'
+      default='$envProgramData\Logs\Software'
+    />
+
+    <parameter
+      name='ToolkitLogToSubfolder'
+      type='choice'
+      default='1'
+      store='text'
+      prompt='Log to subfolder'>
+      <choice label='&amp;True'
+        help="Log to subfolder"
+        value='$True'/>
+      <choice label='&amp;False'
+        help="Do not log to subfolder"
+        value='$False'/>
+    </parameter>
+
+    <parameter
+      name='ToolkitLogStyle'
+      type='choice'
+      default='0'
+      store='text'
+      prompt='Log style'>
+      <choice label='&amp;CMTrace'
+        help="CMTrace log style"
+        value='CMTrace'/>
+      <choice label='&amp;Verbose'
+        help="Legacy log style"
+        value='Legacy'/>
+    </parameter>
+
+    <parameter
+      name='ToolkitLogWriteToHost'
+      type='choice'
+      default='0'
+      store='text'
+      prompt='Write log messages to console host'>
+      <choice label='&amp;True'
+        help="Write to host"
+        value='$True'/>
+      <choice label='&amp;False'
+        help="Do not write to host"
+        value='$False'/>
+    </parameter>
+
+    <parameter
+      name='ToolkitLogHostOutputToStdStreams'
+      type='choice'
+      default='1'
+      store='text'
+      prompt='Host output to standard streams'>
+      <choice label='&amp;True'
+        help="Host output to standard streams"
+        value='$True'/>
+      <choice label='&amp;False'
+        help="Do not host output to standard streams"
+        value='$False'/>
+    </parameter>
+
+    <parameter
+      name='ToolkitOobeDetection'
+      type='choice'
+      default='0'
+      store='text'
+      prompt='Oobe detection'>
+      <choice label='&amp;True'
+        help="Enable Oobe detection"
+        value='$True'/>
+      <choice label='&amp;False'
+        help="Do not enable Oobe detection"
+        value='$False'/>
+    </parameter>
+
+    <parameter
+      name='ToolkitRegPath'
+      type='text'
+      prompt='Registry path for Toolkit settings'
+      default='HKLM:\SOFTWARE'
+    />
+
+    <parameter
+      name='ToolkitRegPathNoAdminRights'
+      type='text'
+      prompt='Registry path for Toolkit settings no admin rights'
+      default='HKCU:\SOFTWARE'
+    />
+
+    <parameter
+      name='ToolkitRequireAdmin'
+      type='choice'
+      default='0'
+      store='text'
+      prompt='Require admin elevation'>
+      <choice label='&amp;True'
+        help="Require admin"
+        value='$True'/>
+      <choice label='&amp;False'
+        help="Do not require admin"
+        value='$False'/>
+    </parameter>
+
+  <parameter
+    name='ToolkitSessionDetection'
+    type='choice'
+    default='0'
+    store='text'
+    prompt='Detect System/Session Zero Operations'>
+      <choice label='&amp;True'
+      help="Enable session detection"
+      value='$True'/>
+      <choice label='&amp;False'
+      help="Do not enable session detection"
+      value='$False'/>
+  </parameter>
+
+  <parameter
+    name='ToolkitTempPath'
+    type='text'
+    prompt='Temp files path'
+    default='$envTemp'
+  />
+
+  <parameter
+    name='ToolkitTempPathNoAdminRights'
+    type='text'
+    prompt='Temp files path no admin rights'
+    default='$envTemp'
+  />
+  <!--UI-->
+  <parameter
+    name='UIBalloonNotifications'
+    type='choice'
+    default='0'
+    store='text'
+    prompt='Balloon notification'>
+      <choice label='&amp;True'
+        help="Enable balloon notification"
+        value='$True'/>
+      <choice label='&amp;False'
+        help="Do not enable balloon notification"
+        value='$False'/>
+  </parameter>
+
+  <parameter
+    name='UIBalloonTitle'
+    type='text'
+    prompt='Balloon title'
+    default='Application Deployment Toolkit'
+  />
+
+  <parameter
+    name='UIDialogStyle'
+    type='choice'
+    default='0'
+    store='text'
+    prompt='Dialog style'>
+      <choice label='&amp;Default'
+        help="Use the modern Fluent dialog style"
+        value='Fluent'/>
+      <choice label='&amp;Custom'
+        help="Classic dialog style"
+        value='Classic'/>
+  </parameter>
+
+  <parameter
+    name='UIDefaultExitCode'
+    type='text'
+    prompt='Default exit code (When UI times out)'
+    default='1618'
+  />
+
+  <parameter
+    name='UIDefaultPromptPersistInterval'
+    type='text'
+    prompt='Default prompt persist interval seconds'
+    default='60'
+  />
+
+  <parameter
+    name='UIDefaultTimeout'
+    type='text'
+    prompt='Default timeout seconds'
+    default='3300'
+  />
+
+  <parameter
+    name='UIDeferExitCode'
+    type='text'
+    prompt='Exit code thrown when user defers'
+    default='60012'
+  />
+
+  <parameter
+    name='UIDynamicProcessEvaluation'
+    type='choice'
+    default='0'
+    store='text'
+    prompt='Specify whether to re-enumerate running processes dynamically while displaying Show-ADTInstallationWelcome'>
+      <choice label='&amp;True'
+        help="Enable dynamic process evaluation"
+        value='$True'/>
+      <choice label='&amp;False'
+        help="Do not enable dynamic process evaluation"
+        value='$False'/>
+  </parameter>
+
+  <parameter
+    name='UIDynamicProcessEvaluationInterval'
+    type='text'
+    prompt='Dynamic process evaluation interval seconds'
+    default='2'
+  />
+
+  <parameter
+    name='UILanguageOverride'
+    type='text'
+    prompt='Language override'
+    default='$null'
+  />
+
+  <parameter
+    name='UIPromptToSaveTimeout'
+    type='text'
+    prompt='Time in seconds after which to re-prompt the user to close applications in case they ignore the prompt'
+    default='120'
+  />
+
+  <parameter
+    name='UIRestartPromptPersistInterval'
+    type='text'
+    prompt='Time in seconds after which the restart prompt should be re-displayed/repositioned'
+    default='600'
+  />
+<!--Code Blocks-->
+
+<parameter
+  name='PreInstallCodeBlock'
+  type='text'
+  prompt='Pre-install code block'
+/>
+
+<parameter
+  name='InstallCodeBlock'
+  type='text'
+  prompt='Install code block'
+/>
+
+<parameter
+  name='PostInstallCodeBlock'
+  type='text'
+  prompt='Post-install code block'
+/>
+
+<parameter
+  name='PreUninstallCodeBlock'
+  type='text'
+  prompt='Pre-uninstall code block'
+/>
+
+<parameter
+  name='UninstallCodeBlock'
+  type='text'
+  prompt='Uninstall code block'
+/>
+
+<parameter
+  name='PostUninstallCodeBlock'
+  type='text'
+  prompt='Post-uninstall code block'
+/>
+
+<parameter
+  name='PreRepairCodeBlock'
+  type='text'
+  prompt='Pre-repair code block'
+/>
+
+<parameter
+  name='RepairCodeBlock'
+  type='text'
+  prompt='Repair code block'
+/>
+
+<parameter
+  name='PostRepairCodeBlock'
+  type='text'
+  prompt='Post-repair code block'
+/>
+
+</parameters>
+
+<content>
+    <file
+      source='PSADT\**\*'
+      destination='PSADT4-${PLASTER_PARAM_InstallTitleFileName}\'
+    />
+
+    <file
+      source='PSADT\Assets\*'
+      destination='PSADT4-${PLASTER_PARAM_InstallTitleFileName}\Assets\'
+    />
+
+    <file
+      source='PSADT\Files\*'
+      destination='PSADT4-${PLASTER_PARAM_InstallTitleFileName}\Files\'
+    />
+
+    <file
+      source='PSADT\PSAppDeployToolkit\*'
+      destination='PSADT4-${PLASTER_PARAM_InstallTitleFileName}\PSAppDeployToolkit\'
+    />
+
+    <file
+      source='PSADT\PSAppDeployToolkit.Extensions\*'
+      destination='PSADT4-${PLASTER_PARAM_InstallTitleFileName}\PSAppDeployToolkit.Extensions\'
+    />
+
+    <file
+      source='PSADT\Strings\*'
+      destination='PSADT4-${PLASTER_PARAM_InstallTitleFileName}\Strings\'
+    />
+
+    <file
+      source='PSADT\SupportFiles\*'
+      destination='PSADT4-${PLASTER_PARAM_InstallTitleFileName}\SupportFiles\'
+    />
+
+    <templateFile
+      source='PSADT\Invoke-AppDeployToolkit.ps1'
+      encoding='UTF8'
+      destination='PSADT4-${PLASTER_PARAM_InstallTitleFileName}\Invoke-AppDeployToolkit.ps1'
+    />
+
+    <templateFile
+      source='PSADT\Config\Config.psd1'
+      encoding='UTF8'
+      destination='PSADT4-${PLASTER_PARAM_InstallTitleFileName}\Config\Config.psd1'
+    />
+  </content>
+</plasterManifest>
