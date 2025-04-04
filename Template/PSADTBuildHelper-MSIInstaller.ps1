@@ -11,6 +11,15 @@ backtick (`) or use single quotes.
 
 #>
 
+#Ensure that the PSAppDeployToolkit module is available
+#See https://psappdeploytoolkit.com/ for installation instructions
+Try {
+    Import-module PSAppDeployToolkit -Force -ErrorAction Stop
+} catch {
+    Throw "PSAppDeployToolkit module not found. Please ensure that the PSAppDeployToolkit module is available in the PowerShell module path."
+}
+
+
 #Specify the path to the plaster template. (Folder that contains PSADT4Plaster.xml and the rest of the template files)
 $TemplatePath = "$PSSCRIPTROOT\PSADT4Plaster_Template\"
 

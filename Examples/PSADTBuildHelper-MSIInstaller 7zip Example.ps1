@@ -14,7 +14,7 @@ backtick (`) or use single quotes.
 #Ensure that the PSAppDeployToolkit module is available
 #See https://psappdeploytoolkit.com/ for installation instructions
 Try {
-    Import-module PSAppDeployToolkitForce -ErrorAction Stop
+    Import-module PSAppDeployToolkit -Force -ErrorAction Stop
 } catch {
     Throw "PSAppDeployToolkit module not found. Please ensure that the PSAppDeployToolkit module is available in the PowerShell module path."
 }
