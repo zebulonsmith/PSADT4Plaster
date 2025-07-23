@@ -153,12 +153,19 @@ code blocks created by this script.
 #>
 
 #Pre-Installation tasks
+#Initial log entry for pre-install
 $PreInstallCodeBlock = @"
     #PreInstallCodeBlock from PSADTBuildHelper
     Write-ADTLogEntry -Message `"Beginning Pre-Installation tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 "@
 
+#Add your code here for pre-installation tasks.
+$PreInstallCodeBlock += @'
+
+'@
+
 #Installation tasks
+#Execute the MSI installer using the provided install arguments.
 $InstallCodeBlock = @"
     #InstallCodeBlock from PSADTBuildHelper
     Write-ADTLogEntry -Message `"Beginning Installation from PSADTBuilder Template using $InstallFile`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
@@ -172,18 +179,35 @@ $InstallCodeBlock = @"
     Write-ADTLogEntry -Message `"EXITCODE:`$(`$InstallProcess.ExitCode)``nSTDOUT:`$(`$InstallProcess.StdOut)``nSTDERR:`$(`$InstallProcess.StdErr)" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 "@
 
+#Add your code here for additional installation tasks.
+$installCodeBlock += @'
+
+'@
+
 #Post-Installation tasks
+#Initial log entry for post-install
 $PostInstallCodeBlock = @"
     #PostInstallCodeBlock from PSADTBuilder
     Write-ADTLogEntry -Message `"Beginning Post-Installation tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 "@
 
+#Add your code here for post-installation tasks.
+$PostInstallCodeBlock += @'
+
+'@
 
 #Pre-Uninstallation tasks
+#Initial log entry for pre-uninstall
 $PreUninstallCodeBlock = @"
     #PreInstallCodeBlock from PSADTBuildHelper
     Write-ADTLogEntry -Message `"Beginning Pre-Uninstallation tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 "@
+
+#Add your code here for pre-uninstallation tasks.
+$PreUninstallCodeBlock += @'
+
+'@
+
 
 #Uninstall tasks
 $UninstallCodeBlock = @"
@@ -199,19 +223,32 @@ $UninstallCodeBlock = @"
     Write-ADTLogEntry -Message `"EXITCODE:`$(`$UninstallProcess.ExitCode)``nSTDOUT:`$(`$UninstallProcess.StdOut)``nSTDERR:`$(`$UninstallProcess.StdErr)" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 "@
 
+#Add your code here for additional uninstallation tasks.
+$UninstallCodeBlock += @'
+
+'@
+
 #Post-Uninstall tasks
 $PostUninstallCodeBlock = @"
     #PostUninstallCodeBlock from PSADTBuilder
     Write-ADTLogEntry -Message `"Beginning Post-Uninstallation tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 "@
 
+#Add your code here for post-uninstallation tasks.
+$PostInstallCodeBlock += @'
 
+'@
 
 #Pre-Repair tasks
 $PreRepairCodeBlock = @"
     #PreRepairCodeBlock from PSADTBuildHelper
     Write-ADTLogEntry -Message `"Beginning Pre-Repair tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 "@
+
+#Add your code here for pre-repair tasks.
+$PreRepairCodeBlock += @'
+
+'@
 
 #Repair tasks
 $RepairCodeBlock = @"
@@ -227,11 +264,21 @@ $RepairCodeBlock = @"
     Write-ADTLogEntry -Message `"EXITCODE:`$(`$RepairProcess.ExitCode)``nSTDOUT:`$(`$RepairProcess.StdOut)``nSTDERR:`$(`$RepairProcess.StdErr)" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 "@
 
+#Add your code here for additional repair tasks.
+$RepairCodeBlock += @'
+
+'@
+
 #Post-Repair tasks
 $PostRepairCodeBlock = @"
     #PostRepairCodeBlock from PSADTBuilder
     Write-ADTLogEntry -Message `"Beginning Post-Repair tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 "@
+
+#Add your code here for post-repair tasks.
+$PostRepairCodeBlock += @'
+
+'@
 
 #endregion
 
