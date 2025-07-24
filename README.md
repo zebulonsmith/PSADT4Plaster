@@ -34,6 +34,7 @@ The easiest way to handle this is to put the MSI in the same directory as the he
 $msifilepath = "YourInstaller.msi" #Populate with the path to the MSI file that will be used in the ADT package.
 ```
 
+If more MSI automations are required, such as automating the creation of an MSI file or reading other properties, you may want to have a look at one of my other projects, [NativePSMSI](https://github.com/zebulonsmith/NativePSMSI).
 
 #### Edit MSI Installation Properties as needed
 Add any additional parameters to pass to the installer. In this example, our installer accepts RemoveDesktopShortcut=True as an additional property. It will be added to the Start-ADTMSIProcess command. If a different executable needs to be launched for uninstall or repair, change the $UninstallFile or $RepairFile variables as needed.
