@@ -1,12 +1,12 @@
-# PSADT4Plaster
+# PSADT4Plaster - 4.0.6
 This repo contains a Plaster template for PSADT 4 as well as some "helper" scripts that can be used for building ADT packages.
 
-The goal is to make it easy to standardize app packaging processes and reduce development time.
+The goal is to make it easy to standardize app packaging processes and reduce development time. Instead of running New-ADTTemplate and then editing the same values every time, we can build a standardized template with Plaster and reference it instead. 
 
 Before using this module, ensure that you're familiar both with the [Powershell App Deploy Toolkit](https://psappdeploytoolkit.com/) and [Plaster module](https://github.com/PowerShellOrg/Plaster).
 
 # How it Works
-The included Plaster template will copy the contents of the PSADT (Currently version 4.0.3) and make edits to config.psd1 and Invoke-AppDeployToolkit.ps1 as defined in the Plaster invocation.
+The included Plaster template will copy the contents of the PSADT and make edits to config.psd1 and Invoke-AppDeployToolkit.ps1 as defined in the Plaster invocation.
 
 All of the configuration options in config.psd1 have been defined in the template and can be easily modified as needed.
 
@@ -17,6 +17,7 @@ Blocks of code for the pre/post install, uninstall and repair actions can be def
 # How to Use it
 Inside of this repo, there are two folders. The Template folder contains the Plaster template itself and two "Helper" scripts, which are meant to be copied and then modified as needed. The modified helper script can be kept and updated for future version updates to a given application.
 
+Once a helper script has been customized, it can be easily re-used when future versions of an application are released with minimal changes.
 
 ## Example: Package an MSI installer
 Create a copy of the PSADTBuildHelper-MSIInstaller.ps1 file and modify it as follows:
@@ -83,7 +84,8 @@ $installCodeBlock += @'
 #### Execute the Script
 Once any additional customizations are made, execute the script. A new PSADT folder structure will be built using the source files in the PSADT4Plaster_Template and the referenced MSI file will be copied to the Files directory.
 
-
+#### Updating
+When a new version of the application is released, simply update the script to reflect the name of the new MSI file (as needed). If install parameters and other customizations remain the same, you can execute the helper script again and it will output an updated PSADT folder structure.
 
 ## Example: Package an EXE installer
 Packaging an executable installer is similar to an MSI, with a few additional steps. Primarily, because we can't easily read information from within the installer, things like the AppVendor, AppVersion, etc will need to be filled out manually. To begin, create a copy of the PSADTBuildHelper-EXEInstaller.ps1 file and modify it as follows:
