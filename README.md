@@ -1,7 +1,7 @@
 # PSADT4Plaster - 4.0.6
 This repo contains a Plaster template for PSADT 4 as well as some "helper" scripts that can be used for building ADT packages.
 
-The goal is to make it easy to standardize app packaging processes and reduce development time. Instead of running New-ADTTemplate and then editing the same values every time, we can build a standardized template with Plaster and reference it instead. 
+The goal is to make it easy to standardize app packaging processes and reduce development time. Instead of running New-ADTTemplate and then editing the same values every time, we can build a standardized template with Plaster and reference it instead. This speeds up packaging efforts, but also provides more consistent output. 
 
 Before using this module, ensure that you're familiar both with the [Powershell App Deploy Toolkit](https://psappdeploytoolkit.com/) and [Plaster module](https://github.com/PowerShellOrg/Plaster).
 
@@ -12,6 +12,24 @@ All of the configuration options in config.psd1 have been defined in the templat
 
 Blocks of code for the pre/post install, uninstall and repair actions can be defined that will be passed to invoke-appdeploytoolkit.ps1.
 
+The Plaster module allows us to create a template that is used to replace text in a target file based on parameters that we define.
+
+Let's have a look at the config.psd1 file in the template as an example, specifically the "InstallParams" value in the "MSI" section.
+
+The value assigned to "InstallParams" in config.psd1 has bee replaced with "<%=$PLASTER_PARAM_MSIInstallParams%>"
+In the helper script, we assign it's default value, "REBOOT = ReallySuppress /QB-!", to a variable called "$MSIInstallParams"
+![Config.psd1 Customizations](images/ConfigPSD1toHelperCompare.png)
+
+
+Further down in the helper script, when we call Invoke-Plaster, we'll set the value of the "MSIInstallParams" parameter to $MSIInstallParams.
+
+![Plaster Invocation](images/PlasterInvocation.png)
+
+The end result is that the Plaster module will replace "<%=$PLASTER_PARAM_MSIInstallParams%>" in config.psd1 with the value assigned to $MSIInstallParams.
+
+The same goes for adding custom code blocks for the install, uninstall and repair phases to Invoke-AppDeployToolkit.ps1. We simply add a Plaster parameter for each phase.
+
+![Preinstall Code Block](images/PreinstallCodeBlock.png)
 
 
 # How to Use it
@@ -34,7 +52,7 @@ The easiest way to handle this is to put the MSI in the same directory as the he
 $msifilepath = "YourInstaller.msi" #Populate with the path to the MSI file that will be used in the ADT package.
 ```
 
-If more MSI automations are required, such as automating the creation of an MSI file or reading other properties, you may want to have a look at one of my other projects, [NativePSMSI](https://github.com/zebulonsmith/NativePSMSI).
+If more MSI automations are required, such as automating the creation of an MST file or reading/writing other properties, you may want to have a look at one of my other projects, [NativePSMSI](https://github.com/zebulonsmith/NativePSMSI).
 
 #### Edit MSI Installation Properties as needed
 Add any additional parameters to pass to the installer. In this example, our installer accepts RemoveDesktopShortcut=True as an additional property. It will be added to the Start-ADTMSIProcess command. If a different executable needs to be launched for uninstall or repair, change the $UninstallFile or $RepairFile variables as needed.
@@ -54,7 +72,7 @@ $RepairArguments = " " #This will probably remain empty for an MSI installer. Th
 #### Run additional Pre and Post actions
 There is a herestring for each install phase that can be used to add additional steps to the package. Be wary of single vs double quotes and escape them properly.
 
-Using the Install phase as an example, there is a block of code in double-quotes so that variables from higher up in the build helper script can be referenced and a second herestring utilizing single quotes that's intended to be used for customizations.
+Using the Install phase as an example, there is a block of code in double-quotes so that variables from higher up in the build helper script can be referenced and a second herestring utilizing single quotes that's intended to be used for customizations. Add additional code below the "#Add your code here..." comment.
 ```powershell
 #Installation tasks
 #Execute the MSI installer using the provided install arguments.

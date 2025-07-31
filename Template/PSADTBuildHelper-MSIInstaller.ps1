@@ -357,7 +357,7 @@ Invoke-plaster @plasterparams -verbose
 
 <#
 Use this section to add any additional automations.
-For example, one could create an Application in Configuration Manager or Intune or copy files to another destination.
+For example, one could create an Application in Configuration Manager or Intune, copy files to another destination for distribution, etc..
 #>
 
 #Copy the MSI to the files folder in the new ADT package
