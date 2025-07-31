@@ -18,18 +18,18 @@ Let's have a look at the config.psd1 file in the template as an example, specifi
 
 The value assigned to "InstallParams" in config.psd1 has bee replaced with "<%=$PLASTER_PARAM_MSIInstallParams%>"
 In the helper script, we assign it's default value, "REBOOT = ReallySuppress /QB-!", to a variable called "$MSIInstallParams"
-![Config.psd1 Customizations](images/ConfigPSD1toHelperCompare.png)
+![Config.psd1 Customizations](Images/ConfigPSD1toHelperCompare.png)
 
 
 Further down in the helper script, when we call Invoke-Plaster, we'll set the value of the "MSIInstallParams" parameter to $MSIInstallParams.
 
-![Plaster Invocation](images/PlasterInvocation.png)
+![Plaster Invocation](Images/PlasterInvocation.png)
 
 The end result is that the Plaster module will replace "<%=$PLASTER_PARAM_MSIInstallParams%>" in config.psd1 with the value assigned to $MSIInstallParams.
 
 The same goes for adding custom code blocks for the install, uninstall and repair phases to Invoke-AppDeployToolkit.ps1. We simply add a Plaster parameter for each phase.
 
-![Preinstall Code Block](images/PreinstallCodeBlock.png)
+![Preinstall Code Block](Images/PreinstallCodeBlock.png)
 
 
 # How to Use it
