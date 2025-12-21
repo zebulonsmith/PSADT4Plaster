@@ -13,13 +13,18 @@ backtick (`) or use single quotes.
 #Ensure that the PSAppDeployToolkit module is available
 #See https://psappdeploytoolkit.com/ for installation instructions
 Try {
-    Import-module PSAppDeployToolkitForce -ErrorAction Stop
+    Import-module PSAppDeployToolkit -Force -ErrorAction Stop
 } catch {
     Throw "PSAppDeployToolkit module not found. Please ensure that the PSAppDeployToolkit module is available in the PowerShell module path."
 }
 
+$PSADTModule = Get-Module -name psappdeploytoolkit
+If ( $PSADTModule.version -ne '4.1.7') {
+    Write-Warning "PSAppDeployToolkit version 4.1.7 is required. The current version is $(($PSADTModule).version). Please update the module."
+}
+
 #Specify the path to the plaster template. (Folder that contains PSADT4Plaster.xml and the rest of the template files)
-$TemplatePath = "$PSSCRIPTROOT\PSADT4Plaster_Template\"
+$TemplatePath = "$PSSCRIPTROOT\PSADT4Plaster_Template_4.1.7\"
 
 #Output path for the ADT package
 $DestinationPath = "$PSScriptRoot"
@@ -52,6 +57,15 @@ $AppscriptVersion = "1.0.0" #Version of this script.
 $AppScriptDate = "$(Get-Date -format g)" #Date the script was created
 $AppScriptAuthor = "" #Probably you
 $InstallTitle = "$($AppVendor) $($AppName) - $($AppVersion)" #Title of the installation. This will be shown in the dialog boxes during installation.
+$RequireAdmin = $true #Set to $false to allow non-admin installs
+
+<#
+Processes to close before installation/uninstallation.
+If this is defined and Deploymode is not set or 'Auto,' the deployment will default to Interactive Mode unless it is executing during OOBE or ESP when a process needs to close.
+Example: '@('excel', @{ Name = 'winword'; Description = 'Microsoft Word' })'
+Must be a literal string!
+#>
+$AppProcessesToClose = '@()'
 
 #Completion dialog shown when the installation completes. This value is populated in the Install-ADTDeployment section of Invoke-AppDeployToolkit.ps1
 $InstallCompleteDialog = "Installation is complete."
@@ -90,15 +104,13 @@ $ToolkitLogMaxHistory = '10'
 $ToolkitLogMaxSize = '10'
 $ToolkitLogPath = '$envWinDir\Logs\Software'
 $ToolkitLogPathNoAdminRights = '$envProgramData\Logs\Software'
+$ToolkitLogToHierarchy = '$false'
 $ToolkitLogToSubfolder = '$false'
 $ToolkitLogStyle = 'CMTrace'
 $ToolkitLogWriteToHost = '$true'
 $ToolkitLogHostOutputToStdStreams = '$false'
-$ToolkitOobeDetection = '$true'
 $ToolkitRegPath = 'HKLM:\SOFTWARE'
 $ToolkitRegPathNoAdminRights = 'HKCU:\SOFTWARE'
-$ToolkitRequireAdmin = '$true'
-$ToolkitSessionDetection = '$true'
 $ToolkitTempPath = '$envTemp'
 $ToolkitTempPathNoAdminRights = '$envTemp'
 
@@ -106,6 +118,7 @@ $ToolkitTempPathNoAdminRights = '$envTemp'
 $UIBalloonNotifications = '$true'
 $UIBalloonTitle = 'PSAppDeployToolkit'
 $UIDialogStyle = 'Fluent'
+$UIFluentAccentColor = '$null'
 $UIDefaultExitCode = '1618'
 $UIDefaultPromptPersistInterval = '60'
 $UIDefaultTimeout = '3300'
@@ -277,6 +290,8 @@ $plasterParams = @{
     InstallTitle = $InstallTitle
     InstallCompleteDialog = $InstallCompleteDialog
     InstallTitleFileName = $InstallTitleFileName
+    RequireAdmin = $RequireAdmin
+    AppProcessesToClose = $AppProcessesToClose
     MSIInstallParams = $MSIInstallParams
     MSILoggingOptions = $MSILoggingOptions
     MSILogPath = $MSILogPath
@@ -294,19 +309,18 @@ $plasterParams = @{
     ToolkitLogPath = $ToolkitLogPath
     ToolkitLogPathNoAdminRights = $ToolkitLogPathNoAdminRights
     ToolkitLogToSubfolder = $ToolkitLogToSubfolder
+    ToolkitLogToHierarchy=$ToolkitLogToHierarchy
     ToolkitLogStyle = $ToolkitLogStyle
     ToolkitLogWriteToHost = $ToolkitLogWriteToHost
     ToolkitLogHostOutputToStdStreams = $ToolkitLogHostOutputToStdStreams
-    ToolkitOobeDetection = $ToolkitOobeDetection
     ToolkitRegPath = $ToolkitRegPath
     ToolkitRegPathNoAdminRights = $ToolkitRegPathNoAdminRights
-    ToolkitRequireAdmin = $ToolkitRequireAdmin
-    ToolkitSessionDetection = $ToolkitSessionDetection
     ToolkitTempPath = $ToolkitTempPath
     ToolkitTempPathNoAdminRights = $ToolkitTempPathNoAdminRights
     UIBalloonNotifications = $UIBalloonNotifications
     UIBalloonTitle = $UIBalloonTitle
     UIDialogStyle = $UIDialogStyle
+    UIFluentAccentColor = $UIFluentAccentColor
     UIDefaultExitCode = $UIDefaultExitCode
     UIDefaultPromptPersistInterval = $UIDefaultPromptPersistInterval
     UIDefaultTimeout = $UIDefaultTimeout
