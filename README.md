@@ -1,7 +1,9 @@
-# PSADT4Plaster - 4.0.6
+# PSADT4Plaster - 4.1.7
 This repo contains a Plaster template for PSADT 4 as well as some "helper" scripts that can be used for building ADT packages.
 
-The goal is to make it easy to standardize app packaging processes and reduce development time. Instead of running New-ADTTemplate and then editing the same values every time, we can build a standardized template with Plaster and reference it instead. This speeds up packaging efforts, but also provides more consistent output. 
+The goal is to make it easy to standardize app packaging processes and reduce development time. Instead of running New-ADTTemplate and then editing the same values every time, we can build a standardized template with Plaster and reference it instead. This speeds up packaging efforts, but also provides more consistent output.
+
+The template for PSADT version 4.0.6 is included for legacy's sake, but it's recommended to use 4.1.x.
 
 Before using this module, ensure that you're familiar both with the [Powershell App Deploy Toolkit](https://psappdeploytoolkit.com/) and [Plaster module](https://github.com/PowerShellOrg/Plaster).
 
@@ -43,7 +45,7 @@ Create a copy of the PSADTBuildHelper-MSIInstaller.ps1 file and modify it as fol
 #### Ensure that the $TemplatePath variable points to the PSADT4Plaster_Template directory
 ```powershell
 #Specify the path to the plaster template. (Folder that contains PSADT4Plaster.xml and the rest of the template files)
-$TemplatePath = "$PSSCRIPTROOT\PSADT4Plaster_Template\"
+$TemplatePath = "$PSSCRIPTROOT\PSADT4Plaster_Template_4.1.7\"
 ```
 
 #### Edit the $msifilepath variable to point to the MSI file.
