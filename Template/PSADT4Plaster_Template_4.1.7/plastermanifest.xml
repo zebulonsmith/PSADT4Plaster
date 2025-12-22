@@ -102,13 +102,6 @@
     />
 
     <parameter
-      name='InstallCompleteDialog'
-      type='text'
-      prompt='Text to show after a completed installation.'
-      default = 'Installation Completed.'
-    />
-
-    <parameter
       name='InstallTitleFileName'
       type='text'
       prompt='File name appended to the package upon creation'
@@ -123,10 +116,10 @@
       prompt='Require admin elevation'>
       <choice label='&amp;True'
         help="Require admin"
-        value='`$True'/>
+        value='$true'/>
       <choice label='&amp;False'
         help="Do not require admin"
-        value='`$False'/>
+        value='$false'/>
     </parameter>
 
     <parameter
@@ -137,6 +130,70 @@ Example: '@('excel', @{ Name = 'winword'; Description = 'Microsoft Word' })'&#xA
 Default: '@()'.&#xA;
 &#xA;"
       default='@()'
+    />
+
+  <!--Script Customization-->
+  <parameter
+     name='AllowDefer'
+     type='choice'
+     prompt='Allow installation deferral'
+     default='0'
+     store='text'>
+      <choice label='&amp;True'
+        help="Allow deferral"
+        value='$true'/>
+      <choice label='&amp;False'
+        help="Do not allow deferral"
+        value='$false'/>
+    </parameter>
+
+    <parameter
+      name='DeferTimes'
+      type='text'
+      prompt='Number of times the user can defer installation'
+      default='3'
+    />
+
+    <parameter
+      name='CheckDiskSpace'
+      type='choice'
+      prompt='Check for disk space before installation'
+      default='0'
+      store='text'>
+      <choice label='&amp;True'
+        help="Check disk space"
+        value='$true'/>
+      <choice label='&amp;False'
+        help="Do not check disk space"
+        value='$false'/>
+    </parameter>
+
+    <parameter
+      name='PersistPrompt'
+      type='choice'
+      prompt='Sets the installation prompt to persist on the screen'
+      default='1'
+      store='text'>
+       <choice label='&amp;True'
+        help="Persist prompt"
+        value='$true'/>
+       <choice label='&amp;False'
+        help="Do not persist prompt"
+        value='$false'/>
+    </parameter>
+
+    <parameter
+      name='InstallCompleteDialog'
+      type='text'
+      prompt='Install complete dialog message'
+      default='Installation completed successfully'
+    />
+
+    <parameter
+      name='UninstallAppProcessCloseCountdown'
+      type='text'
+      prompt='Uninstall app process close timeout'
+      default='60'
     />
 
     <!--Config.psd1-->
@@ -215,10 +272,10 @@ Default: '@()'.&#xA;
       prompt='Compress logs'>
       <choice label='&amp;False'
         help="Compress logs"
-        value='`$False'/>
+        value='$false'/>
       <choice label='&amp;True'
         help="Do not compress logs"
-        value='`$True'/>
+        value='$true'/>
     </parameter>
 
     <parameter
@@ -243,10 +300,10 @@ Default: '@()'.&#xA;
       prompt='Log append'>
        <choice label='&amp;True'
         help="Append to log"
-        value='`$True'/>
+        value='$true'/>
       <choice label='&amp;False'
         help="Create a new log"
-        value='`$False'/>
+        value='$false'/>
     </parameter>
 
     <parameter
@@ -257,10 +314,10 @@ Default: '@()'.&#xA;
       prompt='Debug Logging'>
       <choice label='&amp;True'
         help="Enable debug messaging"
-        value='`$True'/>
+        value='$true'/>
       <choice label='&amp;False'
         help="Do not enable debug messaging"
-        value='`$False'/>
+        value='$false'/>
     </parameter>
 
     <parameter
@@ -299,10 +356,10 @@ Default: '@()'.&#xA;
       prompt='Log to hierarchy'>
       <choice label='&amp;True'
         help="Log to hierarchy"
-        value='`$True'/>
+        value='$true'/>
       <choice label='&amp;False'
         help="Do not log to hierarchy"
-        value='`$False'/>
+        value='$false'/>
     </parameter>
 
     <parameter
@@ -313,10 +370,10 @@ Default: '@()'.&#xA;
       prompt='Log to subfolder'>
       <choice label='&amp;True'
         help="Log to subfolder"
-        value='`$True'/>
+        value='$true'/>
       <choice label='&amp;False'
         help="Do not log to subfolder"
-        value='`$False'/>
+        value='$false'/>
     </parameter>
 
     <parameter
@@ -341,10 +398,10 @@ Default: '@()'.&#xA;
       prompt='Write log messages to console host'>
       <choice label='&amp;True'
         help="Write to host"
-        value='`$True'/>
+        value='$true'/>
       <choice label='&amp;False'
         help="Do not write to host"
-        value='`$False'/>
+        value='$false'/>
     </parameter>
 
     <parameter
@@ -355,10 +412,10 @@ Default: '@()'.&#xA;
       prompt='Host output to standard streams'>
       <choice label='&amp;True'
         help="Host output to standard streams"
-        value='`$True'/>
+        value='$true'/>
       <choice label='&amp;False'
         help="Do not host output to standard streams"
-        value='`$False'/>
+        value='$false'/>
     </parameter>
 
     <parameter
@@ -399,10 +456,10 @@ Default: '@()'.&#xA;
     prompt='Balloon notification'>
       <choice label='&amp;True'
         help="Enable balloon notification"
-        value='`$True'/>
+        value='$true'/>
       <choice label='&amp;False'
         help="Do not enable balloon notification"
-        value='`$False'/>
+        value='$false'/>
   </parameter>
 
   <parameter
@@ -469,10 +526,10 @@ Default: '@()'.&#xA;
     prompt='Specify whether to re-enumerate running processes dynamically while displaying Show-ADTInstallationWelcome'>
       <choice label='&amp;True'
         help="Enable dynamic process evaluation"
-        value='`$True'/>
+        value='$true'/>
       <choice label='&amp;False'
         help="Do not enable dynamic process evaluation"
-        value='`$False'/>
+        value='$false'/>
   </parameter>
 
   <parameter
