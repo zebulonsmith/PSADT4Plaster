@@ -150,3 +150,5 @@ $InstallTitle = "$($AppVendor) $($AppName) - $($AppVersion)" #Title of the insta
 #### Complete Other Customizations
 Finally, add any custom code as needed using the same process as with an MSI.
 
+# Other Notes
+There are many more customization options available in the PSADT and this template does not leverage all of them. Be sure to read the documentation and reference material to determine what other functionality may be appropriate for your situation. This project is meant to be an example and a starting point, not necessarily as a complete solution. That said, it will work for most use cases as-is. 

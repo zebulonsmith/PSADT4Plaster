@@ -22,6 +22,7 @@ Try {
 $PSADTModule = Get-Module -name psappdeploytoolkit
 If ( $PSADTModule.version -ne '4.1.7') {
     Write-Warning "PSAppDeployToolkit version 4.1.7 is required. The current version is $(($PSADTModule).version). Please update the module."
+    exit
 }
 
 
@@ -78,7 +79,7 @@ $AppscriptVersion = "1.0.0" #Version of this script.
 $AppScriptDate = "$(Get-Date -format g)" #Date the script was created
 $AppScriptAuthor = "" #Probably you
 $InstallTitle = "$($AppVendor) $($AppName) - $($AppVersion)" #Title of the installation. This will be shown in the dialog boxes during installation.
-$RequireAdmin = $true #Set to $false to allow non-admin installs
+$RequireAdmin = '$true' #Set to $false to allow non-admin installs
 
 <#
 Processes to close before installation/uninstallation.
@@ -86,13 +87,36 @@ If this is defined and Deploymode is not set or 'Auto,' the deployment will defa
 Example: '@('excel', @{ Name = 'winword'; Description = 'Microsoft Word' })'
 Must be a literal string!
 #>
-$AppProcessesToClose = '@()'
+$AppProcessesToClose = @'
+    @('7-zip')
+'@
 
-#Completion dialog shown when the installation completes. This value is populated in the Install-ADTDeployment section of Invoke-AppDeployToolkit.ps1
+#endregion
+
+#region ScriptCustomization
+
+#This section contains customizations that apply to variable changes that would normally be made within Invoke-AppDeployToolkit.ps1
+
+#Parameters passed to Show-ADTInstallationWelcome. These are the default options specified in Invoke-AppDeployToolkit.ps1
+$AllowDefer = '$true' #Allow deferrals when using Interactive mode
+$DeferTimes = '3' #Number of times the user can defer installation
+$CheckDiskSpace = '$true' #Check for disk space before installation
+$PersistPrompt = '$false' #Sets the installation prompt to persist on the screen
+
+
+<#
+Completion dialog shown when the installation completes.
+This value is populated in the Install-ADTDeployment section of Invoke-AppDeployToolkit.ps1
+Set to $null or an empty string to tell the ADT do skip the dialog.
+#>
 $InstallCompleteDialog = "Installation is complete."
+
+#Set the timeout when closing a process during uninstallation
+$UninstallAppProcessCloseCountdown = '60'
 
 #Create a filename friendly string that will be used for the parent folder when the template is generated. This generally doesn't need to be changed, but you can edit it if you'd like the folder name to be something other than 'PSADT-AppVendor AppName - AppVersion'
 $InstallTitleFileName = $InstallTitle.split([IO.Path]::GetInvalidFileNameChars()) -join "-"
+
 #endregion
 
 #region config.psd1
@@ -117,6 +141,7 @@ $MSIUninstallParams = 'REBOOT=ReallySuppress /QN'
 
 #Toolkit
 $ToolkitCachePath = '$envProgramData\SoftwareCache'
+$ToolkitCompanyName = 'PSAppDeployToolkit'
 $ToolkitCompressLogs = '$false'
 $ToolkitFileCopyMode = 'Native'
 $ToolkitLogAppend = '$true'
@@ -215,6 +240,7 @@ $PostInstallCodeBlock += @'
 $PreUninstallCodeBlock = @"
     #PreInstallCodeBlock from PSADTBuildHelper
     Write-ADTLogEntry -Message `"Beginning Pre-Uninstallation tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
+    Write-ADTLogEntry -Message `"Beginning Pre-Installation tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 "@
 
 #Add your code here for pre-uninstallation tasks.
@@ -257,6 +283,7 @@ $PostInstallCodeBlock += @'
 $PreRepairCodeBlock = @"
     #PreRepairCodeBlock from PSADTBuildHelper
     Write-ADTLogEntry -Message `"Beginning Pre-Repair tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
+    Write-ADTLogEntry -Message `"Beginning Pre-Installation tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 "@
 
 #Add your code here for pre-repair tasks.
@@ -318,6 +345,11 @@ $plasterParams = @{
     InstallTitleFileName = $InstallTitleFileName
     RequireAdmin = $RequireAdmin
     AppProcessesToClose = $AppProcessesToClose
+    AllowDefer = $AllowDefer
+    DeferTimes = $DeferTimes
+    CheckDiskSpace = $CheckDiskSpace
+    PersistPrompt = $PersistPrompt
+    UninstallAppProcessCloseCountdown = $UninstallAppProcessCloseCountdown
     MSIInstallParams = $MSIInstallParams
     MSILoggingOptions = $MSILoggingOptions
     MSILogPath = $MSILogPath
@@ -326,6 +358,7 @@ $plasterParams = @{
     MSISilentParams = $MSISilentParams
     MSIUninstallParams = $MSIUninstallParams
     ToolkitCachePath = $ToolkitCachePath
+    ToolkitCompanyName = $ToolkitCompanyName
     ToolkitCompressLogs = $ToolkitCompressLogs
     ToolkitFileCopyMode = $ToolkitFileCopyMode
     ToolkitLogAppend = $ToolkitLogAppend

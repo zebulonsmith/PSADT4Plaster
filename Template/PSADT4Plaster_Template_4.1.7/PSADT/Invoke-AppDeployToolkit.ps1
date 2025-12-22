@@ -100,7 +100,7 @@ $adtSession = @{
     AppScriptVersion = '<%=$PLASTER_PARAM_AppScriptVersion%>'
     AppScriptDate = '<%=$PLASTER_PARAM_AppScriptDate%>'
     AppScriptAuthor = '<%=$PLASTER_PARAM_AppScriptAuthor%>'
-    RequireAdmin = '<%=$PLASTER_PARAM_RequireAdmin%>'
+    RequireAdmin = <%=$PLASTER_PARAM_RequireAdmin%>
 
     # Install Titles (Only set here to override defaults set by the toolkit).
     InstallName = ''
@@ -126,10 +126,10 @@ function Install-ADTDeployment
 
     ## Show Welcome Message, close processes if specified, allow up to 3 deferrals, verify there is enough disk space to complete the install, and persist the prompt.
     $saiwParams = @{
-        AllowDefer = $true
-        DeferTimes = 3
-        CheckDiskSpace = $true
-        PersistPrompt = $true
+        AllowDefer = <%=$PLASTER_PARAM_AllowDefer%>
+        DeferTimes = <%=$PLASTER_PARAM_DeferTimes%>
+        CheckDiskSpace = <%=$PLASTER_PARAM_CheckDiskSpace%>
+        PersistPrompt = <%=$PLASTER_PARAM_PersistPrompt%>
     }
     if ($adtSession.AppProcessesToClose.Count -gt 0)
     {
@@ -141,7 +141,7 @@ function Install-ADTDeployment
     Show-ADTInstallationProgress
 
     ## <Perform Pre-Installation tasks here>
-
+    <%=$PLASTER_PARAM_PreInstallCodeBlock%>
 
     ##================================================
     ## MARK: Install
@@ -177,7 +177,12 @@ function Install-ADTDeployment
     ## Display a message at the end of the install.
     if (!$adtSession.UseDefaultMsi)
     {
-        Show-ADTInstallationPrompt -Message '<%=$PLASTER_PARAM_InstallCompleteDialog%>' -ButtonRightText 'OK' -Icon Information -NoWait
+        #Modified by PSADT4Plaster to allow skipping this dialog.
+        $InstallCompleteDialog = '<%=$PLASTER_PARAM_InstallCompleteDialog%>'
+        if (![string]::IsNullOrWhiteSpace($InstallCompleteDialog))
+        {
+            Show-ADTInstallationPrompt -Message $InstallCompleteDialog -ButtonRightText 'OK' -Icon Information -NoWait
+        }
     }
 }
 
@@ -196,7 +201,7 @@ function Uninstall-ADTDeployment
     ## If there are processes to close, show Welcome Message with a 60 second countdown before automatically closing.
     if ($adtSession.AppProcessesToClose.Count -gt 0)
     {
-        Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
+        Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown <%=$PLASTER_PARAM_UninstallAppProcessCloseCountdown%>
     }
 
     ## Show Progress Message (with the default message).
@@ -248,7 +253,7 @@ function Repair-ADTDeployment
     ## If there are processes to close, show Welcome Message with a 60 second countdown before automatically closing.
     if ($adtSession.AppProcessesToClose.Count -gt 0)
     {
-        Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown 60
+        Show-ADTInstallationWelcome -CloseProcesses $adtSession.AppProcessesToClose -CloseProcessesCountdown <%=$PLASTER_PARAM_UninstallAppProcessCloseCountdown%>
     }
 
     ## Show Progress Message (with the default message).

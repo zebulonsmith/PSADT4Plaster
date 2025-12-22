@@ -20,7 +20,8 @@ Try {
 
 $PSADTModule = Get-Module -name psappdeploytoolkit
 If ( $PSADTModule.version -ne '4.06') {
-    Write-Warning "PSAppDeployToolkit version 4.1.7 is required. The current version is $(($PSADTModule).version). Please update the module."
+    Write-Warning "PSAppDeployToolkit version 4.0.6 is required. The current version is $(($PSADTModule).version). Please update the module."
+    exit
 }
 
 #Specify the path to the plaster template. (Folder that contains PSADT4Plaster.xml and the rest of the template files)
