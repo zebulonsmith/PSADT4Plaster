@@ -25,33 +25,26 @@ If ( $PSADTModule.version -ne '4.1.7') {
     exit
 }
 
-
-
+#Region Step1: Define template paths
 #Specify the path to the plaster template. (Folder that contains PSADT4Plaster.xml and the rest of the template files)
 $TemplatePath = "$PSSCRIPTROOT\PSADT4Plaster_Template_4.1.7\"
 
-#Output path for the ADT package
+#Output path for the ADT package. This doesn't need to be changed unless you want the output to go somewhere other than the current script directory.
 $DestinationPath = "$PSScriptRoot"
+#endregion
 
-
-#region Read MSI
+#region Step2 - Read MSI Properties
 <#
-We can populate many template variables using information from the MSI
-
-AppArch and AppScriptAuthor will need to be specified manually, along with any other modifications that are desired.
-The Install, Uninstall and Repair code blocks will be populated automatically and only require modifications if additional steps or special modifications are needed.
-
-Be sure to populate any custom arguments that need to be added for the MSI install/uninstall operations below.
-The default MSI params will still be used as defined in the PSADT config.psd1 file.
+Specify an MSI file that will be used in the ADT Package.
+This script will read the proprties table and use it to populate values as appropriate.
 #>
-
 $msifilepath = "" #Populate with the path to the MSI file that will be used in the ADT package.
 $MSIProperties = Get-ADTMsiTableProperty -path $msifilepath -Table 'Property'
 #endregion
 
-#region define installation files
+#region Step3 - Define Installation Files
 
-#Populate installer files and arguments
+#Populate installer files and arguments. The MSI file specified in Step2 will be used unless otherwise specified. 
 $InstallFile = $msifilepath | split-path -leaf #Executable file to install. Be sure it's in the Files directory.
 $InstallArguments = " "
 
@@ -62,13 +55,18 @@ $RepairFile = "$($InstallFile)" #This is usually the same as the installation fi
 $RepairArguments = " " #This will probably remain empty for an MSI installer. The Repair codeblock will use the built in 'repair' action via Start-ADTMsiProcess.
 #endregion
 
-#region ADTSession
+#region Step3 - Populate ADTSession
 
-#Populate values in the $adtSession hashtable of Invoke-AppDeployToolkit.ps1
-#Note that empty values MUST be populated.
+<#
+Populate values in the $adtSession hashtable of Invoke-AppDeployToolkit.ps1
+Default values have been provided for most variables, change them as needed. Be sure to double-check AppArch and RequireAdmin.
+Note that empty values MUST be populated.
 
-$AppVendor = $msiproperties.Manufacturer #Application's publisher.
-$AppName = $msiproperties.ProductName #Application's friendly name.
+AppVendor, Appname and Appversion will be populated using the MSI properties read earlier.
+This works fine MOST of the time but sometimes they're a little bit kooky, so customize as needed.
+#>
+$AppVendor = ($msiproperties.Manufacturer -replace '[<>:"/\\|?*(),.]', '').Trim() #Application's vendor
+$AppName = ($msiproperties.ProductName -replace '[<>:"/\\|?*(),.]', '').Trim() #Application's friendly name.
 $AppVersion = $MSIProperties.ProductVersion #Application's version number.
 $appArch = "x64" #x86 or x64
 $AppLang = "EN" #Specify the language code. See PSADT documentation for a list
@@ -80,6 +78,11 @@ $AppScriptDate = "$(Get-Date -format g)" #Date the script was created
 $AppScriptAuthor = "" #Probably you
 $InstallTitle = "$($AppVendor) $($AppName) - $($AppVersion)" #Title of the installation. This will be shown in the dialog boxes during installation.
 $RequireAdmin = '$true' #Set to $false to allow non-admin installs
+
+If ([string]::isnullorempty($AppScriptAuthor)) {
+    Write-Warning "AppScriptAuthor is not populated. Please set this variable to the name of the script author, otherwise the ADT script will not execute."
+    exit
+}
 
 <#
 Processes to close before installation/uninstallation.
@@ -93,7 +96,7 @@ $AppProcessesToClose = @'
 
 #endregion
 
-#region ScriptCustomization
+#region Step4 - Script Customization
 
 #This section contains customizations that apply to variable changes that would normally be made within Invoke-AppDeployToolkit.ps1
 
@@ -119,11 +122,10 @@ $InstallTitleFileName = $InstallTitle.split([IO.Path]::GetInvalidFileNameChars()
 
 #endregion
 
-#region config.psd1
+#region Step5 - config.psd1
 <#
 Values that will populate into config.psd1.
 These typically don't need to be changed, but be aware of a few.
-    -Change RequireAdmin to $false for non-admin installs.
     -InstallParams, SilentParams, UninstallParams can be used to change the default MSI installation behavior
     -LogDebugMessage is useful when debugging a new package
     -BalloonNotifications can be set to $false if you don't want the balloon notifications to show up during installation.
@@ -178,16 +180,16 @@ $UIRestartPromptPersistInterval = '600'
 #endregion
 
 
-#Region code blocks
+#region Step6 - Customize Code Blocks
 
 
 <#
 These code blocks will be populated the Install-ADTDeployment, Uninstall-ADTDeployment and Repair-ADTDeployment functions in Invoke-AppDeployToolkit.ps1
-For basic installs, there shouldn't need to be much work done here. The installer files and their arguments will be inserted as they aredefined above.
+For basic installs, there shouldn't need to be much work done here. The installer files and their arguments will be inserted as they are defined above.
 
 You can use this section to add any other custom code that is needed such as copying configuration files, executing multiple installers, etc.
 
-Tip: Use -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`" when calling Write-ADTLogEntry to indicate that the messages are generated from the
+Tip: Use -Source "$($adtsession.InstallPhase)-PSADTHelper" when calling Write-ADTLogEntry to indicate that the messages are generated from the
 code blocks created by this script.
 #>
 
@@ -332,7 +334,7 @@ $PostRepairCodeBlock += @'
 #endregion
 
 <#
-Invokes Plaster to build the new ADT package. This section shouldn't need to be changed.
+Invokes Plaster to build the new ADT package. This section does't need to be changed.
 #>
 $plasterParams = @{
     TemplatePath = $TemplatePath

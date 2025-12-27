@@ -33,6 +33,7 @@ The same goes for adding custom code blocks for the install, uninstall and repai
 
 ![Preinstall Code Block](Images/PreinstallCodeBlock.png)
 
+The Install, Uninstall and Repair code blocks all contain pre-populated code that will execute the installers specified in the template automatically using the values provided in the variables in the 'Define Installation Files' region of the template. 
 
 # How to Use it
 Inside of this repo, there are two folders. The Template folder contains the Plaster template itself and two "Helper" scripts, which are meant to be copied and then modified as needed. The modified helper script can be kept and updated for future version updates to a given application.
@@ -151,4 +152,4 @@ $InstallTitle = "$($AppVendor) $($AppName) - $($AppVersion)" #Title of the insta
 Finally, add any custom code as needed using the same process as with an MSI.
 
 # Other Notes
-There are many more customization options available in the PSADT and this template does not leverage all of them. Be sure to read the documentation and reference material to determine what other functionality may be appropriate for your situation. This project is meant to be an example and a starting point, not necessarily as a complete solution. That said, it will work for most use cases as-is. 
+There are many more customization options available in the PSADT and this template does not leverage all of them. Be sure to read the documentation and reference material to determine what other functionality may be appropriate for your situation. This project is meant to be an example and a starting point, not necessarily as a complete solution. That said, it will work for most use cases as-is.
