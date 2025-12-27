@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <plasterManifest
   schemaVersion="1.2"
   templateType="Project"
@@ -99,6 +99,13 @@
       type='text'
       prompt='Installation title (shown in the PSADT dialog)'
       default='${PLASTER_PARAM_AppName} ${PLASTER_PARAM_AppVersion}'
+    />
+
+    <parameter
+      name='InstallCompleteDialog'
+      type='text'
+      prompt='Text to show after a completed installation.'
+      default = 'Installation Completed.'
     />
 
     <parameter

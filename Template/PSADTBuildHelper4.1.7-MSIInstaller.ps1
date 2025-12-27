@@ -225,10 +225,10 @@ $installCodeBlock += @'
 
 #Post-Installation tasks
 #Initial log entry for post-install
-$PostInstallCodeBlock = @"
+$PostInstallCodeBlock = @'
     #PostInstallCodeBlock from PSADTBuilder
-    Write-ADTLogEntry -Message `"Beginning Post-Installation tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
-"@
+    Write-ADTLogEntry -Message "Beginning Post-Installation tasks from PSADTBuilder Template" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+'@
 
 #Add your code here for post-installation tasks.
 $PostInstallCodeBlock += @'
@@ -237,11 +237,10 @@ $PostInstallCodeBlock += @'
 
 #Pre-Uninstallation tasks
 #Initial log entry for pre-uninstall
-$PreUninstallCodeBlock = @"
+$PreUninstallCodeBlock = @'
     #PreInstallCodeBlock from PSADTBuildHelper
-    Write-ADTLogEntry -Message `"Beginning Pre-Uninstallation tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
-    Write-ADTLogEntry -Message `"Beginning Pre-Installation tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
-"@
+    Write-ADTLogEntry -Message "Beginning Pre-Uninstallation tasks from PSADTBuilder Template" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+'@
 
 #Add your code here for pre-uninstallation tasks.
 $PreUninstallCodeBlock += @'
@@ -269,10 +268,10 @@ $UninstallCodeBlock += @'
 '@
 
 #Post-Uninstall tasks
-$PostUninstallCodeBlock = @"
+$PostUninstallCodeBlock = @'
     #PostUninstallCodeBlock from PSADTBuilder
-    Write-ADTLogEntry -Message `"Beginning Post-Uninstallation tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
-"@
+    Write-ADTLogEntry -Message "Beginning Post-Uninstallation tasks from PSADTBuilder Template" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+'@
 
 #Add your code here for post-uninstallation tasks.
 $PostInstallCodeBlock += @'
@@ -283,7 +282,6 @@ $PostInstallCodeBlock += @'
 $PreRepairCodeBlock = @"
     #PreRepairCodeBlock from PSADTBuildHelper
     Write-ADTLogEntry -Message `"Beginning Pre-Repair tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
-    Write-ADTLogEntry -Message `"Beginning Pre-Installation tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 "@
 
 #Add your code here for pre-repair tasks.
@@ -303,6 +301,16 @@ $RepairCodeBlock = @"
     }
 
     Write-ADTLogEntry -Message `"EXITCODE:`$(`$RepairProcess.ExitCode)``nSTDOUT:`$(`$RepairProcess.StdOut)``nSTDERR:`$(`$RepairProcess.StdErr)" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
+
+
+
+    #Alternate repair method: Uninstall/Reinstall using built in ADT functions.
+    #If using this method, comment out the section above.
+    <#
+    Write-ADTLogEntry -Message `"Beginning Repair from PSADTBuilder Template using Uninstall/Reinstall method." -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
+    Uninstall-ADTDeployment
+    Install-ADTDeployment
+    #>
 "@
 
 #Add your code here for additional repair tasks.
@@ -407,6 +415,9 @@ Invoke-plaster @plasterparams -verbose
 Use this section to add any additional automations.
 For example, one could create an Application in Configuration Manager or Intune, copy files to another destination for distribution, etc..
 #>
+
+#Export the MSI properties to a JSON file to make automations easier later.
+$MSIProperties | ConvertTo-Json | Out-File -FilePath "$DestinationPath\PSADT4-$($InstallTitleFileName)\MSIProperties.json" -Force
 
 #Copy the MSI to the files folder in the new ADT package
 Copy-Item -Path $msifilepath -Destination "$DestinationPath\PSADT4-$($InstallTitleFileName)\Files\" -Force
