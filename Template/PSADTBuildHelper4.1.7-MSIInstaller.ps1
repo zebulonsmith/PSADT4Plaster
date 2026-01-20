@@ -25,7 +25,7 @@ If ( $PSADTModule.version -ne '4.1.7') {
     exit
 }
 
-#Region Step1: Define template paths
+#Region Step1 - Define template paths
 #Specify the path to the plaster template. (Folder that contains PSADT4Plaster.xml and the rest of the template files)
 $TemplatePath = "$PSSCRIPTROOT\PSADT4Plaster_Template_4.1.7\"
 if (-not (Test-Path -Path $TemplatePath -pathtype Container)) {
@@ -49,20 +49,19 @@ If ([string]::isnullorempty($msifilepath)) {
 $MSIProperties = Get-ADTMsiTableProperty -path $msifilepath -Table 'Property'
 #endregion
 
-#region Step3 - Define Installation Files
-
+#region Step3 - Define Installation Files and Arguments
 #Populate installer files and arguments. The MSI file specified in Step2 will be used unless otherwise specified.
 $InstallFile = $msifilepath | split-path -leaf #Executable file to install. Be sure it's in the Files directory.
-$InstallArguments = " "
+$InstallArguments = ""
 
 $UninstallFile = "$($InstallFile)" #This is usually the same as the installation file. Change it if needed.
-$UninstallArguments = " "
+$UninstallArguments = ""
 
 $RepairFile = "$($InstallFile)" #This is usually the same as the installation file. Change it if needed.
-$RepairArguments = " " #This will probably remain empty for an MSI installer. The Repair codeblock will use the built in 'repair' action via Start-ADTMsiProcess.
+$RepairArguments = "" #This will probably remain empty for an MSI installer. The Repair codeblock will use the built in 'repair' action via Start-ADTMsiProcess.
 #endregion
 
-#region Step3 - Populate ADTSession
+#region Step4 - Populate ADTSession
 
 <#
 Populate values in the $adtSession hashtable of Invoke-AppDeployToolkit.ps1
@@ -96,14 +95,19 @@ Processes to close before installation/uninstallation.
 If this is defined and Deploymode is not set or 'Auto,' the deployment will default to Interactive Mode unless it is executing during OOBE or ESP when a process needs to close.
 Example: '@('excel', @{ Name = 'winword'; Description = 'Microsoft Word' })'
 Must be a literal string!
-#>
 $AppProcessesToClose = @'
     @('7-zip')
 '@
 
+#>
+
+$AppProcessesToClose = @'
+
+'@
+
 #endregion
 
-#region Step4 - Script Customization
+#region Step5 - Script Customization
 
 #This section contains customizations that apply to variable changes that would normally be made within Invoke-AppDeployToolkit.ps1
 
@@ -129,7 +133,7 @@ $InstallTitleFileName = $InstallTitle.split([IO.Path]::GetInvalidFileNameChars()
 
 #endregion
 
-#region Step5 - config.psd1
+#region Step6 - config.psd1
 <#
 Values that will populate into config.psd1.
 These typically don't need to be changed, but be aware of a few.
@@ -202,10 +206,11 @@ code blocks created by this script.
 
 #Pre-Installation tasks
 #Initial log entry for pre-install
-$PreInstallCodeBlock = @"
+$PreInstallCodeBlock = @'
     #PreInstallCodeBlock from PSADTBuildHelper
-    Write-ADTLogEntry -Message `"Beginning Pre-Installation tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
-"@
+    Write-ADTLogEntry -Message "Beginning Pre-Installation tasks from PSADTBuilder Template" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+    Write-ADTLogEntry -message "$($adtsession | Out-String)" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+'@
 
 #Add your code here for pre-installation tasks.
 $PreInstallCodeBlock += @'
@@ -249,6 +254,7 @@ $PostInstallCodeBlock += @'
 $PreUninstallCodeBlock = @'
     #PreInstallCodeBlock from PSADTBuildHelper
     Write-ADTLogEntry -Message "Beginning Pre-Uninstallation tasks from PSADTBuilder Template" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+    Write-ADTLogEntry -message "$($adtsession | Out-String)" -Source "$($adtsession.InstallPhase)-PSADTHelper"
 '@
 
 #Add your code here for pre-uninstallation tasks.
@@ -303,6 +309,7 @@ $RepairCodeBlock = @"
     #RepairodeBlock from PSADTBuildHelper
 
     Write-ADTLogEntry -Message `"Beginning Repair from PSADTBuilder Template using $RepairFile`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
+    Write-ADTLogEntry -message `"`$(`$adtsession | Out-String)`" -Source "`$(`$adtsession.InstallPhase)-PSADTHelper`"
         if (![string]::isnullorempty("$RepairArguments")) {
         `$repairProcess = Start-ADTMsiProcess -filepath '$RepairFile' -Action Repair -AdditionalArgumentList '$RepairArguments'
     } else {

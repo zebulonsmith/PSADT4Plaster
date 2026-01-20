@@ -25,7 +25,7 @@ If ( $PSADTModule.version -ne '4.1.7') {
 }
 
 
-
+#region Step1 - Define template paths
 #Specify the path to the plaster template. (Folder that contains PSADT4Plaster.xml and the rest of the template files)
 $TemplatePath = "$PSSCRIPTROOT\PSADT4Plaster_Template_4.1.7\"
 if (-not (Test-Path -Path $TemplatePath -PathType Container)) {
@@ -34,19 +34,21 @@ if (-not (Test-Path -Path $TemplatePath -PathType Container)) {
 
 #Output path for the ADT package
 $DestinationPath = "$PSScriptRoot"
+#endregion
 
-
+#region Step2 - Define Installation Files and Arguments
 #Populate installer files and arguments
 $InstallFile = " " #Executable file to install. Be sure it's in the Files directory.
-$InstallArguments = " "
+$InstallArguments = ""
 
 $UninstallFile = "$($InstallFile)" #This is usually the same as the installation file. Change it if needed.
-$UninstallArguments = " "
+$UninstallArguments = ""
 
 $RepairFile = "$($InstallFile)" #This is usually the same as the installation file. Change it if needed.
-$RepairArguments = " "
+$RepairArguments = ""
+#endregion
 
-#region ADTSession
+#region Step3 - Populate ADTSession
 
 #Populate values in the $adtSession hashtable of Invoke-AppDeployToolkit.ps1
 #Note that empty values MUST be populated.
@@ -75,14 +77,20 @@ Processes to close before installation/uninstallation.
 If this is defined and Deploymode is not set or 'Auto,' the deployment will default to Interactive Mode unless it is executing during OOBE or ESP when a process needs to close.
 Example: '@('excel', @{ Name = 'winword'; Description = 'Microsoft Word' })'
 Must be a literal string!
-#>
+
 $AppProcessesToClose = @'
     @('7-zip')
 '@
 
+#>
+
+$AppProcessesToClose = @'
+
+'@
+
 #endregion
 
-#region ScriptCustomization
+#region Step4 - Script Customization
 
 #This section contains customizations that apply to variable changes that would normally be made within Invoke-AppDeployToolkit.ps1
 
@@ -100,7 +108,7 @@ Set to $null or an empty string to tell the ADT do skip the dialog.
 #>
 $InstallCompleteDialog = "Installation is complete."
 
-#Set the timeout when closing a process during uninstallation
+#Set the timeout (in seconds) when closing a process during uninstallation
 $UninstallAppProcessCloseCountdown = '60'
 
 #Create a filename friendly string that will be used for the parent folder when the template is generated. This generally doesn't need to be changed, but you can edit it if you'd like the folder name to be something other than 'PSADT-AppVendor AppName - AppVersion'
@@ -108,7 +116,7 @@ $InstallTitleFileName = $InstallTitle.split([IO.Path]::GetInvalidFileNameChars()
 
 #endregion
 
-#region config.psd1
+#region Step5 - config.psd1
 <#
 Values that will populate into config.psd1.
 These typically don't need to be changed, but be aware of a few.
@@ -167,7 +175,7 @@ $UIRestartPromptPersistInterval = '600'
 #endregion
 
 
-#Region code blocks
+#region Step6 - Customize Code Blocks
 
 
 <#
@@ -182,10 +190,11 @@ code blocks created by this script.
 
 #Pre-Installation tasks
 #Initial log entry for pre-install
-$PreInstallCodeBlock = @"
+$PreInstallCodeBlock = @'
     #PreInstallCodeBlock from PSADTBuildHelper
-    Write-ADTLogEntry -Message `"Beginning Pre-Installation tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
-"@
+    Write-ADTLogEntry -Message "Beginning Pre-Installation tasks from PSADTBuilder Template" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+    Write-ADTLogEntry -message "$($adtsession | Out-String)" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+'@
 
 #Add your code here for pre-installation tasks.
 $PreInstallCodeBlock += @'
@@ -226,6 +235,7 @@ $PostInstallCodeBlock += @'
 $PreUninstallCodeBlock = @'
     #PreInstallCodeBlock from PSADTBuildHelper
     Write-ADTLogEntry -Message "Beginning Pre-Uninstallation tasks from PSADTBuilder Template" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+    Write-ADTLogEntry -message "$($adtsession | Out-String)" -Source "$($adtsession.InstallPhase)-PSADTHelper"
 '@
 
 #Add your code here for pre-uninstallation tasks.
@@ -261,10 +271,10 @@ $PostInstallCodeBlock += @'
 '@
 
 #Pre-Repair tasks
-$PreRepairCodeBlock = @"
+$PreRepairCodeBlock = @'
     #PreRepairCodeBlock from PSADTBuildHelper
-    Write-ADTLogEntry -Message `"Beginning Pre-Repair tasks from PSADTBuilder Template`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
-"@
+    Write-ADTLogEntry -Message "Beginning Pre-Repair tasks from PSADTBuilder Template" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+'@
 
 #Add your code here for pre-repair tasks.
 $PreRepairCodeBlock += @'
@@ -287,6 +297,7 @@ $RepairCodeBlock = @"
     #Alternate Method: Use an executable with command line arguments
     <#
     Write-ADTLogEntry -Message `"Beginning Repair from PSADTBuilder Template using $RepairFile`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
+    Write-ADTLogEntry -message `"`$(`$adtsession | Out-String)`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
     `$RepairProcess = Start-ADTProcess -FilePath '$RepairFile' -ArgumentList '$RepairArguments -PassThru
 
     Write-ADTLogEntry -Message `"EXITCODE:`$(`$RepairProcess.ExitCode)``nSTDOUT:`$(`$RepairProcess.StdOut)``nSTDERR:`$(`$RepairProcess.StdErr)" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
