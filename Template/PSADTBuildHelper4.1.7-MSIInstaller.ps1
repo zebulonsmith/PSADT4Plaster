@@ -39,12 +39,17 @@ Specify an MSI file that will be used in the ADT Package.
 This script will read the proprties table and use it to populate values as appropriate.
 #>
 $msifilepath = "" #Populate with the path to the MSI file that will be used in the ADT package.
+If ([string]::isnullorempty($msifilepath)) {
+    Write-Warning "msifilepath is not populated. Please set this variable to the path of the MSI file, otherwise the ADT script will not execute."
+    exit
+}
+
 $MSIProperties = Get-ADTMsiTableProperty -path $msifilepath -Table 'Property'
 #endregion
 
 #region Step3 - Define Installation Files
 
-#Populate installer files and arguments. The MSI file specified in Step2 will be used unless otherwise specified. 
+#Populate installer files and arguments. The MSI file specified in Step2 will be used unless otherwise specified.
 $InstallFile = $msifilepath | split-path -leaf #Executable file to install. Be sure it's in the Files directory.
 $InstallArguments = " "
 

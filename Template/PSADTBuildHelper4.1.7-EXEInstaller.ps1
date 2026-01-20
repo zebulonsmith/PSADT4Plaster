@@ -60,7 +60,12 @@ $AppscriptVersion = "1.0.0" #Version of this script.
 $AppScriptDate = "$(Get-Date -format g)" #Date the script was created
 $AppScriptAuthor = "" #Probably you
 $InstallTitle = "$($AppVendor) $($AppName) - $($AppVersion)" #Title of the installation. This will be shown in the dialog boxes during installation.
-$RequireAdmin = $true #Set to $false to allow non-admin installs
+$RequireAdmin = '$true' #Set to $false to allow non-admin installs
+
+If ([string]::isnullorempty($AppScriptAuthor)) {
+    Write-Warning "AppScriptAuthor is not populated. Please set this variable to the name of the script author, otherwise the ADT script will not execute."
+    exit
+}
 
 <#
 Processes to close before installation/uninstallation.

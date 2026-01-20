@@ -190,13 +190,6 @@ Default: '@()'.&#xA;
     </parameter>
 
     <parameter
-      name='InstallCompleteDialog'
-      type='text'
-      prompt='Install complete dialog message'
-      default='Installation completed successfully'
-    />
-
-    <parameter
       name='UninstallAppProcessCloseCountdown'
       type='text'
       prompt='Uninstall app process close timeout'
