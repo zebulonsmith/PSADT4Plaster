@@ -28,6 +28,9 @@ If ( $PSADTModule.version -ne '4.1.7') {
 
 #Specify the path to the plaster template. (Folder that contains PSADT4Plaster.xml and the rest of the template files)
 $TemplatePath = "$PSSCRIPTROOT\PSADT4Plaster_Template_4.1.7\"
+if (-not (Test-Path -Path $TemplatePath -PathType Container)) {
+    Throw "Template path $TemplatePath not found. Please ensure that the path is correct and that the Plaster template files are present."
+}
 
 #Output path for the ADT package
 $DestinationPath = "$PSScriptRoot"
