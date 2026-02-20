@@ -85,7 +85,7 @@ $AppProcessesToClose = @'
 #>
 
 $AppProcessesToClose = @'
-
+@()
 '@
 
 #endregion
@@ -206,8 +206,10 @@ $PreInstallCodeBlock += @'
 #Execute installer
 $InstallCodeBlock = @"
     #InstallCodeBlock from PSADTBuildHelper
-    Write-ADTLogEntry -Message `"Beginning Installation from PSADTBuilder Template using $InstallFile`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
-    `$InstallProcess = Start-ADTProcess -FilePath '$InstallFile' -ArgumentList '$InstallArguments' -PassThru
+    `$InstallFile = '$InstallFile'
+    `$InstallArguments = '$InstallArguments'
+    Write-ADTLogEntry -Message `"Beginning Installation from PSADTBuilder Template using `$InstallFile`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
+    `$InstallProcess = Start-ADTProcess -FilePath `$InstallFile -ArgumentList `$InstallArguments -PassThru
 
     Write-ADTLogEntry -Message `"EXITCODE:`$(`$InstallProcess.ExitCode)``nSTDOUT:`$(`$InstallProcess.StdOut)``nSTDERR:`$(`$InstallProcess.StdErr)" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 "@
@@ -247,9 +249,11 @@ $PreUninstallCodeBlock += @'
 #Uninstall tasks
 $UninstallCodeBlock = @"
     #UninstallCodeBlock from PSADTBuildHelper
-    Write-ADTLogEntry -Message `"Beginning Uninstallation from PSADTBuilder Template using $UninstallFile`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
+    `$UninstallFile = '$UninstallFile'
+    `$UninstallArguments = '$UninstallArguments'
+    Write-ADTLogEntry -Message `"Beginning Uninstallation from PSADTBuilder Template using `$UninstallFile`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 
-    `$UninstallProcess = Start-ADTProcess -FilePath '$UninstallFile' -ArgumentList '$UninstallArguments' -PassThru
+    `$UninstallProcess = Start-ADTProcess -FilePath `$UninstallFile -ArgumentList `$UninstallArguments -PassThru
 
     Write-ADTLogEntry -Message `"EXITCODE:`$(`$UninstallProcess.ExitCode)``nSTDOUT:`$(`$UninstallProcess.StdOut)``nSTDERR:`$(`$UninstallProcess.StdErr)" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 "@
@@ -266,7 +270,7 @@ $PostUninstallCodeBlock = @'
 '@
 
 #Add your code here for post-uninstallation tasks.
-$PostInstallCodeBlock += @'
+$PostUninstallCodeBlock += @'
 
 '@
 
