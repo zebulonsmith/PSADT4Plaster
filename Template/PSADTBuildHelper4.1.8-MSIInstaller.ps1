@@ -50,7 +50,12 @@ $MSIProperties = Get-ADTMsiTableProperty -path $msifilepath -Table 'Property'
 #endregion
 
 #region Step3 - Define Installation Files and Arguments
-#Populate installer files and arguments. The MSI file specified in Step2 will be used unless otherwise specified.
+<#
+Populate installer files and arguments. The MSI file specified in Step2 will be used unless otherwise specified.
+Arguments should be populated using the same syntax as you would use with Start-ADTMSIProcess -AdditionalArgumentList, but wrapped in quotes so that it's passed as a string.
+Example:
+$InstallArguments = "'ARG1=Value1', 'ARG2=`"Something in Quotes`"'"
+#>
 $InstallFile = $msifilepath | split-path -leaf #Executable file to install. Be sure it's in the Files directory.
 $InstallArguments = ""
 
@@ -223,7 +228,7 @@ $InstallCodeBlock = @"
     #InstallCodeBlock from PSADTBuildHelper
 
     `$InstallFile = '$InstallFile'
-    `$InstallArguments = '$InstallArguments'
+    `$InstallArguments = $InstallArguments
     Write-ADTLogEntry -Message `"Beginning Installation from PSADTBuilder Template using `$InstallFile`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 
     if (![string]::isnullorempty(`$InstallArguments)) {
@@ -271,7 +276,7 @@ $UninstallCodeBlock = @"
     #UninstallCodeBlock from PSADTBuildHelper
 
     `$UninstallFile = '$UninstallFile'
-    `$UninstallArguments = '$UninstallArguments'
+    `$UninstallArguments = $UninstallArguments
     Write-ADTLogEntry -Message `"Beginning Uninstallation from PSADTBuilder Template using `$UninstallFile`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 
     if (![string]::isnullorempty(`$UninstallArguments)) {
