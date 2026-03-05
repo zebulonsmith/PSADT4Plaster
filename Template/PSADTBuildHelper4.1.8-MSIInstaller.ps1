@@ -52,8 +52,9 @@ $MSIProperties = Get-ADTMsiTableProperty -path $msifilepath -Table 'Property'
 #region Step3 - Define Installation Files and Arguments
 <#
 Populate installer files and arguments. The MSI file specified in Step2 will be used unless otherwise specified.
-Arguments should be populated using the same syntax as you would use with Start-ADTMSIProcess -AdditionalArgumentList, but wrapped in quotes so that it's passed as a string.
-Example:
+Arguments should be populated using the same syntax as you would use with Start-ADTMSIProcess -AdditionalArgumentList, encapsulated in quotes so that it's passed as a single string.
+Example: If you need to pass these arguments 'ARG1=Value1', 'ARG2="Something in Quotes"'
+Use this:
 $InstallArguments = "'ARG1=Value1', 'ARG2=`"Something in Quotes`"'"
 #>
 $InstallFile = $msifilepath | split-path -leaf #Executable file to install. Be sure it's in the Files directory.

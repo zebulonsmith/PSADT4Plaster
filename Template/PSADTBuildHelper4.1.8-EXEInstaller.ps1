@@ -37,7 +37,11 @@ $DestinationPath = "$PSScriptRoot"
 #endregion
 
 #region Step2 - Define Installation Files and Arguments
-#Populate installer files and arguments
+<#
+Populate installer files and arguments. 
+The strings for install arguments should encapsualte any quotes that need to be passed to the installer.
+Example: If the installer requires something like /path="c:\program files\ApplicationName", the $InstallArguments variable should be set to '/path="c:\program files\ApplicationName"'
+#>
 $InstallFile = " " #Executable file to install. Be sure it's in the Files directory.
 $InstallArguments = ""
 
@@ -206,8 +210,8 @@ $PreInstallCodeBlock += @'
 #Execute installer
 $InstallCodeBlock = @"
     #InstallCodeBlock from PSADTBuildHelper
-    `$InstallFile = '$InstallFile'
-    `$InstallArguments = '$InstallArguments'
+    `$InstallFile = $InstallFile
+    `$InstallArguments = $InstallArguments
     Write-ADTLogEntry -Message `"Beginning Installation from PSADTBuilder Template using `$InstallFile`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
     `$InstallProcess = Start-ADTProcess -FilePath `$InstallFile -ArgumentList `$InstallArguments -PassThru
 
