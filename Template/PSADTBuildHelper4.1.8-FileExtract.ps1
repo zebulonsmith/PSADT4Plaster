@@ -38,18 +38,24 @@ $DestinationPath = "$PSScriptRoot"
 
 #region Step2 - Define Installation Files and Arguments
 <#
-Populate installer files and arguments.
-The strings for install arguments should be encapsulated in quotes.
-Example: If the installer requires something like /path="c:\program files\ApplicationName", the $InstallArguments variable would be set to "'/path=`"c:\program files\ApplicationName`"'"
+Populate the executables for the application that will be targeted for shortcut creation and an icon file.
+Both are optional.
 #>
-$InstallFile = " " #Executable file to install. Be sure it's in the Files directory.
-$InstallArguments = ""
 
-$UninstallFile = "$($InstallFile)" #This is usually the same as the installation file. Change it if needed.
-$UninstallArguments = ""
 
-$RepairFile = "$($InstallFile)" #This is usually the same as the installation file. Change it if needed.
-$RepairArguments = ""
+#Will be used for the DisplayIcon in control panel. Should be set to the name of a valid executable file that will be present in the application target directory.
+$AppIcon = ""
+
+<#
+Specify one or more files that will be present in the Application's target directory. Start Menu shortcuts will be created for each.
+The key should be the name of the executable file and the value should be any arguments that need to be passed to the executable when launched from the shortcut.
+Values must be encapulated in quotes.
+If no arguments are needed, set the value to an empty string.
+Example:
+$ShortcutTargets= @{"exewithnoargs.exe"="";"exewithbasicarguments.exe"="'/whatever'";"exewithargumentsinquotes.exe"="'/thing=`"C:\Path\To\Stuff`"'";}
+#>
+$ShortcutTargets= @{"eclipse.exe"="";"exewithargumentsinquotes.exe"="'/thing=`"C:\Path\To\Stuff`"'";"exewithnoargs.exe"=""}
+
 #endregion
 
 #region Step3 - Populate ADTSession
@@ -207,16 +213,105 @@ $PreInstallCodeBlock += @'
 
 
 #Installation tasks
-#Execute installer
+#Set app icon variable
 $InstallCodeBlock = @"
-    #InstallCodeBlock from PSADTBuildHelper
-    `$InstallFile = '$InstallFile'
-    `$InstallArguments = $InstallArguments
-    Write-ADTLogEntry -Message `"Beginning Installation from PSADTBuilder Template using `$InstallFile`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
-    `$InstallProcess = Start-ADTProcess -FilePath `$InstallFile -ArgumentList `$InstallArguments -PassThru
-
-    Write-ADTLogEntry -Message `"EXITCODE:`$(`$InstallProcess.ExitCode)``nSTDOUT:`$(`$InstallProcess.StdOut)``nSTDERR:`$(`$InstallProcess.StdErr)" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
+    #Set up variables
+    `$AppIconFile = "$AppIcon"
 "@
+
+#Copy files and create registry uninstall key
+$InstallCodeBlock += @'
+
+    #InstallCodeBlock from PSADTBuildHelper
+    Write-ADTLogEntry -Message "Beginning Installation from PSADTBuilder Template." -Source "$($adtsession.InstallPhase)-PSADTHelper"
+
+    if ($ADTSession.apparch -eq "x64") {
+        Write-ADTLogEntry -Message "Detected 64-bit application architecture. Targeting Program Files for installation." -Source "$($adtsession.InstallPhase)-PSADTHelper"
+        $TargetDir = "$($env:ProgramFiles)\$($ADTSession.AppName)"
+        $UninstallKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$($ADTSession.AppVendor)-$($ADTSession.AppName)"
+    } else {
+        Write-ADTLogEntry -Message "Detected 32-bit application architecture. Targeting Program Files (x86) for installation." -Source "$($adtsession.InstallPhase)-PSADTHelper"
+        $TargetDir = "$(${env:ProgramFiles(x86)})\$($ADTSession.AppName)"
+        $UninstallKey = "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\$($ADTSession.Vendor)-$($ADTSession.AppName)"
+    }
+
+
+    #Copy all files from $($ADTSession.DirFiles) to $TargetDir as defined above.
+    Write-ADTLogEntry -Message "Copying application files from $($ADTSession.DirFiles) to $TargetDir" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+    Copy-ADTFile -path "$($ADTSession.DirFiles)\*" -destination $TargetDir
+
+    #Create a batch file that will be used for uninstallation if the user manually triggers it from the control panel.
+    Write-ADTLogEntry -Message "Creating uninstall batch file at $TargetDir\Uninstall.cmd" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+    $RegUninstallKeyString = $UninstallKey.replace("HKLM:", "HKEY_LOCAL_MACHINE")
+    $UninstallBatchFile = @"
+reg delete `"$RegUninstallKeyString`" /f
+rmdir `"$TargetDir`" /s /q
+"@
+
+    $UninstallBatchFile | Out-File -FilePath "$TargetDir\Uninstall.cmd" -Encoding oem -Force
+
+    #Create an uninstall key in the registry.
+    Write-ADTLogEntry -Message "Creating uninstall registry key at $UninstallKey" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+    Set-ADTRegistryKey -LiteralPath $UninstallKey -name DisplayName -value "$($ADTSession.AppName)" -Type String
+    Set-ADTRegistryKey -LiteralPath $UninstallKey -name DisplayVersion -value "$($ADTSession.AppVersion)" -Type String
+    Set-ADTRegistryKey -LiteralPath $UninstallKey -name Publisher -value "$($ADTSession.AppVendor)" -Type String
+    Set-ADTRegistryKey -LiteralPath $UninstallKey -name UninstallString -value "$TargetDir\Uninstall.cmd" -Type String
+
+    if (Test-path "$($TargetDir)\$($AppIcon)") {
+        Set-ADTRegistryKey -LiteralPath $UninstallKey -name DisplayIcon -value "$($TargetDir)\$($appiconfile)" -Type String
+    }
+
+'@
+
+#Populate start menu shortcuts.
+#Sort out the directory on the start menu where shortcuts will be created
+if ($ShortcutTargets.Count -gt 0) {
+    $InstallCodeBlock += @'
+
+    $StartMenuPath = "$($env:ProgramData)\Microsoft\Windows\Start Menu\Programs\$($ADTSession.AppVendor)\$($ADTSession.AppName)"
+    Write-ADTLogEntry -Message "Creating Start Menu shortcuts at $StartMenuPath " -Source "$($adtsession.InstallPhase)-PSADTHelper"
+    if (!(Test-Path $StartMenuPath)) {
+        New-Item -Path $StartMenuPath -ItemType Directory | Out-Null
+    }
+'@
+
+#Create a shortcut for each item in $StartcutTargets
+}
+
+Foreach ($ShortcutTarget in $ShortcutTargets.GetEnumerator()) {
+    if ($shortcuttarget.value) {
+        $InstallCodeBlock += @"
+
+    `$ShortcutArgs = $($Shortcuttarget.value)
+"@
+    } else {
+        $InstallCodeBlock += @"
+
+    `$ShortcutArgs = `$null
+"@
+    }
+
+    $InstallCodeBlock += @"
+
+    `$name = `"$($ShortcutTarget.name)`"
+
+    #Create shortcut for `$(`$name)
+    Write-ADTLogEntry -Message "Creating Start Menu shortcut for `$(`$Name)" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
+    `$ShortcutPath = Join-Path `$StartMenuPath ([IO.Path]::GetFileNameWithoutExtension("`$(`$Name)") + ".lnk")
+    `$TargetPath = Join-Path `$TargetDir `$name
+    if (`$ShortcutArgs) {
+        New-ADTShortcut -LiteralPath `$ShortcutPath -TargetPath `$TargetPath -IconLocation `$TargetPath -arguments `$ShortcutArgs
+    } else {
+        New-ADTShortcut -LiteralPath `$ShortcutPath -TargetPath `$TargetPath -IconLocation `$TargetPath
+    }
+"@
+}
+
+
+#Add your code here for additional installation tasks.
+$installCodeBlock += @'
+
+'@
 
 #Add your code here for additional installation tasks.
 $installCodeBlock += @'
@@ -251,16 +346,34 @@ $PreUninstallCodeBlock += @'
 
 
 #Uninstall tasks
-$UninstallCodeBlock = @"
+$UninstallCodeBlock = @'
+
     #UninstallCodeBlock from PSADTBuildHelper
-    `$UninstallFile = '$UninstallFile'
-    `$UninstallArguments = $UninstallArguments
-    Write-ADTLogEntry -Message `"Beginning Uninstallation from PSADTBuilder Template using `$UninstallFile`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
+    Write-ADTLogEntry -Message "Beginning Uninstallation from PSADTBuilder Template" -Source "$($adtsession.InstallPhase)-PSADTHelper"
 
-    `$UninstallProcess = Start-ADTProcess -FilePath `$UninstallFile -ArgumentList `$UninstallArguments -PassThru
+    
 
-    Write-ADTLogEntry -Message `"EXITCODE:`$(`$UninstallProcess.ExitCode)``nSTDOUT:`$(`$UninstallProcess.StdOut)``nSTDERR:`$(`$UninstallProcess.StdErr)" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
-"@
+    if ($ADTSession.apparch -eq "x64") {
+        Write-ADTLogEntry -Message "Detected 64-bit application architecture. Targeting Program Files for uninstallation." -Source "$($adtsession.InstallPhase)-PSADTHelper"
+        $TargetDir = "$($env:ProgramFiles)\$($ADTSession.AppVendor)\$($ADTSession.AppName)"
+        $UninstallKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$($ADTSession.Vendor)-$($ADTSession.AppName)"
+    } else {
+        Write-ADTLogEntry -Message "Detected 32-bit application architecture. Targeting Program Files (x86) for uninstallation." -Source "$($adtsession.InstallPhase)-PSADTHelper"
+        $TargetDir = "$(${env:ProgramFiles(x86)})\$($ADTSession.AppVendor)\$($ADTSession.AppName)"
+        $UninstallKey = "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\$($ADTSession.Vendor)-$($ADTSession.AppName)"
+    }
+
+    $ShortcutPath = "$($env:ProgramData)\Microsoft\Windows\Start Menu\Programs\$($ADTSession.AppVendor)\$($ADTSession.AppName)"
+    Write-ADTLogEntry -Message "Removing Start Menu shortcuts at $ShortcutPath" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+    Remove-ADTFile -Path $ShortcutPath -Recurse
+
+    Write-ADTLogEntry -Message "Removing application files at $TargetDir" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+    Remove-ADTFile -path $TargetDir -Recurse
+
+    Write-ADTLogEntry -Message "Removing uninstall registry key at $UninstallKey" -Source "$($adtsession.InstallPhase)-PSADTHelper"
+    Remove-ADTRegistryKey -LiteralPath $UninstallKey -Recurse
+
+'@
 
 #Add your code here for additional uninstallation tasks.
 $UninstallCodeBlock += @'
