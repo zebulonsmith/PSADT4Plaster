@@ -39,16 +39,18 @@ $DestinationPath = "$PSScriptRoot"
 #region Step2 - Define Installation Files and Arguments
 <#
 Populate installer files and arguments.
-The strings for install arguments should be encapsulated in quotes.
+The strings for install files and arguments should be encapsulated in quotes so that they can be properly injected into the relative code blocks.
 Example: If the installer requires something like /path="c:\program files\ApplicationName", the $InstallArguments variable would be set to "'/path=`"c:\program files\ApplicationName`"'"
+
+This allows for flexibility with paths to install files. For example, an uninstaller might exist in Program Files, so you'd use something like $UninstallFIle= '"$($env:programfiles)\ApplicationName\uninstall.exe"' 
 #>
 $InstallFile = " " #Executable file to install. Be sure it's in the Files directory.
 $InstallArguments = ""
 
-$UninstallFile = "$($InstallFile)" #This is usually the same as the installation file. Change it if needed.
+$UninstallFile = "`"$($InstallFile)`"" #This is usually the same as the installation file. Change it if needed.
 $UninstallArguments = ""
 
-$RepairFile = "$($InstallFile)" #This is usually the same as the installation file. Change it if needed.
+$RepairFile = "`"$($InstallFile)`"" #This is usually the same as the installation file. Change it if needed.
 $RepairArguments = ""
 #endregion
 
@@ -210,7 +212,8 @@ $PreInstallCodeBlock += @'
 #Execute installer
 $InstallCodeBlock = @"
     #InstallCodeBlock from PSADTBuildHelper
-    `$InstallFile = '$InstallFile'
+    #Be sure that the InstallFile and InstallArguments variables are properly populated above using quotes appropriately. 
+    `$InstallFile = $InstallFile
     `$InstallArguments = $InstallArguments
     Write-ADTLogEntry -Message `"Beginning Installation from PSADTBuilder Template using `$InstallFile`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
     `$InstallProcess = Start-ADTProcess -FilePath `$InstallFile -ArgumentList `$InstallArguments -PassThru
@@ -253,7 +256,8 @@ $PreUninstallCodeBlock += @'
 #Uninstall tasks
 $UninstallCodeBlock = @"
     #UninstallCodeBlock from PSADTBuildHelper
-    `$UninstallFile = '$UninstallFile'
+    #Be sure that the UninstallFile and UninstallArguments variables are properly populated above using quotes appropriately.
+    `$UninstallFile = $UninstallFile
     `$UninstallArguments = $UninstallArguments
     Write-ADTLogEntry -Message `"Beginning Uninstallation from PSADTBuilder Template using `$UninstallFile`" -Source `"`$(`$adtsession.InstallPhase)-PSADTHelper`"
 
