@@ -238,7 +238,7 @@ $InstallCodeBlock += @'
 
     #Copy all files from $($ADTSession.DirFiles) to $TargetDir as defined above.
     Write-ADTLogEntry -Message "Copying application files from $($ADTSession.DirFiles) to $TargetDir" -Source "$($adtsession.InstallPhase)-PSADTHelper"
-    Copy-ADTFile -path "$($ADTSession.DirFiles)\*" -destination $TargetDir
+    Copy-ADTFile -path "$($ADTSession.DirFiles)\*" -destination $TargetDir -recurse
 
     #Create a batch file that will be used for uninstallation if the user manually triggers it from the control panel.
     Write-ADTLogEntry -Message "Creating uninstall batch file at $TargetDir\Uninstall.cmd" -Source "$($adtsession.InstallPhase)-PSADTHelper"
