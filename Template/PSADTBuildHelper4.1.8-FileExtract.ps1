@@ -363,7 +363,7 @@ $UninstallCodeBlock = @'
         $UninstallKey = "HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\$($ADTSession.Vendor)-$($ADTSession.AppName)"
     }
 
-    $ShortcutPath = "$($env:ProgramData)\Microsoft\Windows\Start Menu\Programs\$($ADTSession.AppVendor)\$($ADTSession.AppName)"
+    $ShortcutPath = "$($env:ProgramData)\Microsoft\Windows\Start Menu\Programs\$($ADTSession.AppName)"
     Write-ADTLogEntry -Message "Removing Start Menu shortcuts at $ShortcutPath" -Source "$($adtsession.InstallPhase)-PSADTHelper"
     Remove-ADTFile -Path $ShortcutPath -Recurse
 
