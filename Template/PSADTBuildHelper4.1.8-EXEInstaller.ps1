@@ -1,7 +1,7 @@
 <#
 This script is intended to be used to facilitate the use of the Plaster module to create a new ADT package based on an installer that uses an executable file.
 
-Populate the variables as directed and then execute the script.\
+Populate the variables as directed and then execute the script.
 
 Keep in mind that variable values will be injected into the ADT via Plaster, so it is necessary to be consious about the use of
 single (') and double (") quotes. This is particularly true for the code blocks that are injected into the ADT package. The code
