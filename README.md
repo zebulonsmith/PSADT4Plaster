@@ -1,20 +1,18 @@
 # PSADT4Plaster - 4.1.8
-This repo contains a Plaster template for PSADT 4 as well as some "helper" scripts that can be used for building ADT packages.
+This repo contains a [Plaster](https://github.com/PowerShellOrg/Plaster) template for PSADT 4 as well as some "helper" scripts that can be used for building PSADT packages.
 
 The goal is to make it easy to standardize app packaging processes and reduce development time. Instead of running New-ADTTemplate and then editing the same values every time, we can build a standardized template with Plaster and reference it instead. This speeds up packaging efforts, but also provides more consistent output.
-
-The template for PSADT version 4.0.6 is included for legacy's sake, but it's recommended to use 4.1.x.
 
 Before using this module, ensure that you're familiar both with the [Powershell App Deploy Toolkit](https://psappdeploytoolkit.com/) and [Plaster module](https://github.com/PowerShellOrg/Plaster).
 
 # How it Works
-The included Plaster template will copy the contents of the PSADT and make edits to config.psd1 and Invoke-AppDeployToolkit.ps1 as defined in the Plaster invocation.
+The Plaster module allows us to create a template that is used to replace text in a target file based on parameters that we define. Invoking the included template will copy the contents of the PSADT and make edits to config.psd1 and Invoke-AppDeployToolkit.ps1 as defined in the Plaster invocation.
 
 All of the configuration options in config.psd1 have been defined in the template and can be easily modified as needed.
 
 Blocks of code for the pre/post install, uninstall and repair actions can be defined that will be passed to invoke-appdeploytoolkit.ps1.
 
-The Plaster module allows us to create a template that is used to replace text in a target file based on parameters that we define.
+
 
 Let's have a look at the config.psd1 file in the template as an example, specifically the "InstallParams" value in the "MSI" section.
 
@@ -23,7 +21,7 @@ In the helper script, we assign it's default value, "REBOOT = ReallySuppress /QB
 ![Config.psd1 Customizations](Images/ConfigPSD1toHelperCompare.png)
 
 
-Further down in the helper script, when we call Invoke-Plaster, we'll set the value of the "MSIInstallParams" parameter to $MSIInstallParams.
+Further down in the helper script, when we call Invoke-Plaster, we'll set the value of the "MSIInstallParams" Plaster parameter to $MSIInstallParams.
 
 ![Plaster Invocation](Images/PlasterInvocation.png)
 
@@ -33,7 +31,7 @@ The same goes for adding custom code blocks for the install, uninstall and repai
 
 ![Preinstall Code Block](Images/PreinstallCodeBlock.png)
 
-The Install, Uninstall and Repair code blocks all contain pre-populated code that will execute the installers specified in the template automatically using the values provided in the variables in the 'Define Installation Files' region of the template. 
+The Install, Uninstall and Repair code blocks all contain pre-populated code that will execute the installers specified in the template automatically using the values provided in the variables in the 'Define Installation Files' region of the template.
 
 # How to Use it
 Inside of this repo, there are two folders. The Template folder contains the Plaster template itself and two "Helper" scripts, which are meant to be copied and then modified as needed. The modified helper script can be kept and updated for future version updates to a given application.

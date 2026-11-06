@@ -1,0 +1,696 @@
+{
+    "$schema":  "https://raw.githubusercontent.com/PowerShellOrg/Plaster/main/Plaster/Schema/plaster-manifest-v2.json",
+    "schemaVersion":  "2.0",
+    "metadata":  {
+                     "name":  "PSADT4Plaster",
+                     "id":  "a5a8eb81-7f8c-46dc-9530-53d0891ffe11",
+                     "version":  "1.0.0",
+                     "title":  "PSADT 4 Plaster 4.1.8 Template",
+                     "description":  "Assists with the creation and automation of PSADT packages",
+                     "author":  "Github.com/Zebulonsmith",
+                     "tags":  "",
+                     "templateType":  "Project"
+                 },
+    "parameters":  [
+                       {
+                           "name":  "AppVendor",
+                           "type":  "text",
+                           "prompt":  "Application publisher"
+                       },
+                       {
+                           "name":  "AppName",
+                           "type":  "text",
+                           "prompt":  "Application name"
+                       },
+                       {
+                           "name":  "AppVersion",
+                           "type":  "text",
+                           "prompt":  "Application version"
+                       },
+                       {
+                           "name":  "AppArch",
+                           "type":  "choice",
+                           "prompt":  "Application architecture",
+                           "default":  "0",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u002664-bit",
+                                               "value":  "x64",
+                                               "help":  "64-bit Application"
+                                           },
+                                           {
+                                               "label":  "\u002632-bit",
+                                               "value":  "x86",
+                                               "help":  "32-bit Application"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "AppLang",
+                           "type":  "text",
+                           "prompt":  "Application Language",
+                           "default":  "EN"
+                       },
+                       {
+                           "name":  "AppRevision",
+                           "type":  "text",
+                           "prompt":  "Application revision",
+                           "default":  "01"
+                       },
+                       {
+                           "name":  "AppSuccessExitCodes",
+                           "type":  "text",
+                           "prompt":  "Application success exit codes",
+                           "default":  "@(0)"
+                       },
+                       {
+                           "name":  "AppRebootExitCodes",
+                           "type":  "text",
+                           "prompt":  "Application reboot exit codes",
+                           "default":  "@(1641, 3010)"
+                       },
+                       {
+                           "name":  "AppScriptVersion",
+                           "type":  "text",
+                           "prompt":  "Application script version",
+                           "default":  "1.0.0"
+                       },
+                       {
+                           "name":  "AppScriptDate",
+                           "type":  "text",
+                           "prompt":  "Application script date",
+                           "default":  "$([DateTime]::Now.Year)-$([DateTime]::Now.Month)-$([DateTime]::Now.Day)"
+                       },
+                       {
+                           "name":  "AppScriptAuthor",
+                           "type":  "user-email",
+                           "prompt":  "Application script author"
+                       },
+                       {
+                           "name":  "InstallTitle",
+                           "type":  "text",
+                           "prompt":  "Installation title (shown in the PSADT dialog)",
+                           "default":  "${AppName} ${AppVersion}"
+                       },
+                       {
+                           "name":  "InstallCompleteDialog",
+                           "type":  "text",
+                           "prompt":  "Text to show after a completed installation.",
+                           "default":  "Installation Completed."
+                       },
+                       {
+                           "name":  "InstallTitleFileName",
+                           "type":  "text",
+                           "prompt":  "File name appended to the package upon creation",
+                           "default":  "${AppVendor}-${AppName}-${AppVersion}"
+                       },
+                       {
+                           "name":  "RequireAdmin",
+                           "type":  "choice",
+                           "prompt":  "Require admin elevation",
+                           "default":  "0",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026True",
+                                               "value":  "$true",
+                                               "help":  "Require admin"
+                                           },
+                                           {
+                                               "label":  "\u0026False",
+                                               "value":  "$false",
+                                               "help":  "Do not require admin"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "AppProcessesToClose",
+                           "type":  "text",
+                           "prompt":  "Processes to close before installation.\n Example: \u0027@(\u0027excel\u0027, @{ Name = \u0027winword\u0027; Description = \u0027Microsoft Word\u0027 })\u0027\n Default: \u0027@()\u0027.\n \n",
+                           "default":  "@()"
+                       },
+                       {
+                           "name":  "AllowDefer",
+                           "type":  "choice",
+                           "prompt":  "Allow installation deferral",
+                           "default":  "0",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026True",
+                                               "value":  "$true",
+                                               "help":  "Allow deferral"
+                                           },
+                                           {
+                                               "label":  "\u0026False",
+                                               "value":  "$false",
+                                               "help":  "Do not allow deferral"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "DeferTimes",
+                           "type":  "text",
+                           "prompt":  "Number of times the user can defer installation",
+                           "default":  "3"
+                       },
+                       {
+                           "name":  "CheckDiskSpace",
+                           "type":  "choice",
+                           "prompt":  "Check for disk space before installation",
+                           "default":  "0",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026True",
+                                               "value":  "$true",
+                                               "help":  "Check disk space"
+                                           },
+                                           {
+                                               "label":  "\u0026False",
+                                               "value":  "$false",
+                                               "help":  "Do not check disk space"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "PersistPrompt",
+                           "type":  "choice",
+                           "prompt":  "Sets the installation prompt to persist on the screen",
+                           "default":  "1",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026True",
+                                               "value":  "$true",
+                                               "help":  "Persist prompt"
+                                           },
+                                           {
+                                               "label":  "\u0026False",
+                                               "value":  "$false",
+                                               "help":  "Do not persist prompt"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "UninstallAppProcessCloseCountdown",
+                           "type":  "text",
+                           "prompt":  "Uninstall app process close timeout",
+                           "default":  "60"
+                       },
+                       {
+                           "name":  "MSIInstallParams",
+                           "type":  "text",
+                           "prompt":  "Installation parameters (MSI)",
+                           "default":  "REBOOT=ReallySuppress /QB-!"
+                       },
+                       {
+                           "name":  "MSILoggingOptions",
+                           "type":  "text",
+                           "prompt":  "Logging options (MSI)",
+                           "default":  "/L*V"
+                       },
+                       {
+                           "name":  "MSILogPath",
+                           "type":  "text",
+                           "prompt":  "Log path (MSI)",
+                           "default":  "`$envWinDir\\Logs\\Software"
+                       },
+                       {
+                           "name":  "MSILogPathNoAdminRights",
+                           "type":  "text",
+                           "prompt":  "Log path no admin rights (MSI)",
+                           "default":  "`$envProgramData\\Logs\\Software"
+                       },
+                       {
+                           "name":  "MSIMutexWaitTime",
+                           "type":  "text",
+                           "prompt":  "Mutex wait time (MSI)",
+                           "default":  "600"
+                       },
+                       {
+                           "name":  "MSISilentParams",
+                           "type":  "text",
+                           "prompt":  "Silent parameters (MSI)",
+                           "default":  "REBOOT=ReallySuppress /QN"
+                       },
+                       {
+                           "name":  "MSIUninstallParams",
+                           "type":  "text",
+                           "prompt":  "Uninstall parameters (MSI)",
+                           "default":  "REBOOT=ReallySuppress /QN"
+                       },
+                       {
+                           "name":  "ToolkitCachePath",
+                           "type":  "text",
+                           "prompt":  "Toolkit cache path",
+                           "default":  "`$envProgramData\\SoftwareCache"
+                       },
+                       {
+                           "name":  "ToolkitCompanyName",
+                           "type":  "text",
+                           "prompt":  "Company name",
+                           "default":  "PSAppDeployToolkit"
+                       },
+                       {
+                           "name":  "ToolkitCompressLogs",
+                           "type":  "choice",
+                           "prompt":  "Compress logs",
+                           "default":  "0",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026False",
+                                               "value":  "$false",
+                                               "help":  "Compress logs"
+                                           },
+                                           {
+                                               "label":  "\u0026True",
+                                               "value":  "$true",
+                                               "help":  "Do not compress logs"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "ToolkitFileCopyMode",
+                           "type":  "choice",
+                           "prompt":  "File copy mode",
+                           "default":  "0",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026Native",
+                                               "value":  "Native",
+                                               "help":  "Powershell native file copy"
+                                           },
+                                           {
+                                               "label":  "\u0026Robocopy",
+                                               "value":  "Robocopy",
+                                               "help":  "Use robocopy.exe"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "ToolkitLogAppend",
+                           "type":  "choice",
+                           "prompt":  "Log append",
+                           "default":  "0",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026True",
+                                               "value":  "$true",
+                                               "help":  "Append to log"
+                                           },
+                                           {
+                                               "label":  "\u0026False",
+                                               "value":  "$false",
+                                               "help":  "Create a new log"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "ToolkitLogDebugMessage",
+                           "type":  "choice",
+                           "prompt":  "Debug Logging",
+                           "default":  "1",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026True",
+                                               "value":  "$true",
+                                               "help":  "Enable debug messaging"
+                                           },
+                                           {
+                                               "label":  "\u0026False",
+                                               "value":  "$false",
+                                               "help":  "Do not enable debug messaging"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "ToolkitLogMaxHistory",
+                           "type":  "text",
+                           "prompt":  "Maximum log history",
+                           "default":  "10"
+                       },
+                       {
+                           "name":  "ToolkitLogMaxSize",
+                           "type":  "text",
+                           "prompt":  "Maximum log size",
+                           "default":  "10"
+                       },
+                       {
+                           "name":  "ToolkitLogPath",
+                           "type":  "text",
+                           "prompt":  "Log path",
+                           "default":  "`$envWinDir\\Logs\\Software"
+                       },
+                       {
+                           "name":  "ToolkitLogPathNoAdminRights",
+                           "type":  "text",
+                           "prompt":  "Log path no admin rights",
+                           "default":  "`$envProgramData\\Logs\\Software"
+                       },
+                       {
+                           "name":  "ToolkitLogToHierarchy",
+                           "type":  "choice",
+                           "prompt":  "Log to hierarchy",
+                           "default":  "0",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026True",
+                                               "value":  "$true",
+                                               "help":  "Log to hierarchy"
+                                           },
+                                           {
+                                               "label":  "\u0026False",
+                                               "value":  "$false",
+                                               "help":  "Do not log to hierarchy"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "ToolkitLogToSubfolder",
+                           "type":  "choice",
+                           "prompt":  "Log to subfolder",
+                           "default":  "1",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026True",
+                                               "value":  "$true",
+                                               "help":  "Log to subfolder"
+                                           },
+                                           {
+                                               "label":  "\u0026False",
+                                               "value":  "$false",
+                                               "help":  "Do not log to subfolder"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "ToolkitLogStyle",
+                           "type":  "choice",
+                           "prompt":  "Log style",
+                           "default":  "0",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026CMTrace",
+                                               "value":  "CMTrace",
+                                               "help":  "CMTrace log style"
+                                           },
+                                           {
+                                               "label":  "\u0026Verbose",
+                                               "value":  "Legacy",
+                                               "help":  "Legacy log style"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "ToolkitLogWriteToHost",
+                           "type":  "choice",
+                           "prompt":  "Write log messages to console host",
+                           "default":  "0",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026True",
+                                               "value":  "$true",
+                                               "help":  "Write to host"
+                                           },
+                                           {
+                                               "label":  "\u0026False",
+                                               "value":  "$false",
+                                               "help":  "Do not write to host"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "ToolkitLogHostOutputToStdStreams",
+                           "type":  "choice",
+                           "prompt":  "Host output to standard streams",
+                           "default":  "1",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026True",
+                                               "value":  "$true",
+                                               "help":  "Host output to standard streams"
+                                           },
+                                           {
+                                               "label":  "\u0026False",
+                                               "value":  "$false",
+                                               "help":  "Do not host output to standard streams"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "ToolkitRegPath",
+                           "type":  "text",
+                           "prompt":  "Registry path for Toolkit settings",
+                           "default":  "HKLM:\\SOFTWARE"
+                       },
+                       {
+                           "name":  "ToolkitRegPathNoAdminRights",
+                           "type":  "text",
+                           "prompt":  "Registry path for Toolkit settings no admin rights",
+                           "default":  "HKCU:\\SOFTWARE"
+                       },
+                       {
+                           "name":  "ToolkitTempPath",
+                           "type":  "text",
+                           "prompt":  "Temp files path",
+                           "default":  "`$envTemp"
+                       },
+                       {
+                           "name":  "ToolkitTempPathNoAdminRights",
+                           "type":  "text",
+                           "prompt":  "Temp files path no admin rights",
+                           "default":  "`$envProgramData\\Logs\\Software"
+                       },
+                       {
+                           "name":  "UIBalloonNotifications",
+                           "type":  "choice",
+                           "prompt":  "Balloon notification",
+                           "default":  "0",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026True",
+                                               "value":  "$true",
+                                               "help":  "Enable balloon notification"
+                                           },
+                                           {
+                                               "label":  "\u0026False",
+                                               "value":  "$false",
+                                               "help":  "Do not enable balloon notification"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "UIFluentAccentColor",
+                           "type":  "text",
+                           "prompt":  "Fluent accent color (hex)",
+                           "default":  "`$null"
+                       },
+                       {
+                           "name":  "UIBalloonTitle",
+                           "type":  "text",
+                           "prompt":  "Balloon title",
+                           "default":  "Application Deployment Toolkit"
+                       },
+                       {
+                           "name":  "UIDialogStyle",
+                           "type":  "choice",
+                           "prompt":  "Dialog style",
+                           "default":  "0",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026Default",
+                                               "value":  "Fluent",
+                                               "help":  "Use the modern Fluent dialog style"
+                                           },
+                                           {
+                                               "label":  "\u0026Custom",
+                                               "value":  "Classic",
+                                               "help":  "Classic dialog style"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "UIDefaultExitCode",
+                           "type":  "text",
+                           "prompt":  "Default exit code (When UI times out)",
+                           "default":  "1618"
+                       },
+                       {
+                           "name":  "UIDefaultPromptPersistInterval",
+                           "type":  "text",
+                           "prompt":  "Default prompt persist interval seconds",
+                           "default":  "60"
+                       },
+                       {
+                           "name":  "UIDefaultTimeout",
+                           "type":  "text",
+                           "prompt":  "Default timeout seconds",
+                           "default":  "3300"
+                       },
+                       {
+                           "name":  "UIDeferExitCode",
+                           "type":  "text",
+                           "prompt":  "Exit code thrown when user defers",
+                           "default":  "60012"
+                       },
+                       {
+                           "name":  "UIDynamicProcessEvaluation",
+                           "type":  "choice",
+                           "prompt":  "Specify whether to re-enumerate running processes dynamically while displaying Show-ADTInstallationWelcome",
+                           "default":  "0",
+                           "store":  "text",
+                           "choices":  [
+                                           {
+                                               "label":  "\u0026True",
+                                               "value":  "$true",
+                                               "help":  "Enable dynamic process evaluation"
+                                           },
+                                           {
+                                               "label":  "\u0026False",
+                                               "value":  "$false",
+                                               "help":  "Do not enable dynamic process evaluation"
+                                           }
+                                       ]
+                       },
+                       {
+                           "name":  "UIDynamicProcessEvaluationInterval",
+                           "type":  "text",
+                           "prompt":  "Dynamic process evaluation interval seconds",
+                           "default":  "2"
+                       },
+                       {
+                           "name":  "UILanguageOverride",
+                           "type":  "text",
+                           "prompt":  "Language override",
+                           "default":  "`$null"
+                       },
+                       {
+                           "name":  "UIPromptToSaveTimeout",
+                           "type":  "text",
+                           "prompt":  "Time in seconds after which to re-prompt the user to close applications in case they ignore the prompt",
+                           "default":  "120"
+                       },
+                       {
+                           "name":  "UIRestartPromptPersistInterval",
+                           "type":  "text",
+                           "prompt":  "Time in seconds after which the restart prompt should be re-displayed/repositioned",
+                           "default":  "600"
+                       },
+                       {
+                           "name":  "PreInstallCodeBlock",
+                           "type":  "text",
+                           "prompt":  "Pre-install code block",
+                           "default":  "# PSADT4Plaster Pre-install code block"
+                       },
+                       {
+                           "name":  "InstallCodeBlock",
+                           "type":  "text",
+                           "prompt":  "Install code block",
+                           "default":  "# PSADT4PlasterInstall code block"
+                       },
+                       {
+                           "name":  "PostInstallCodeBlock",
+                           "type":  "text",
+                           "prompt":  "Post-install code block",
+                           "default":  "# PSADT4Plaster Post-install code block"
+                       },
+                       {
+                           "name":  "PreUninstallCodeBlock",
+                           "type":  "text",
+                           "prompt":  "Pre-uninstall code block",
+                           "default":  "# PSADT4Plaster Pre-uninstall code block"
+                       },
+                       {
+                           "name":  "UninstallCodeBlock",
+                           "type":  "text",
+                           "prompt":  "Uninstall code block",
+                           "default":  "# PSADT4Plaster Uninstall code block"
+                       },
+                       {
+                           "name":  "PostUninstallCodeBlock",
+                           "type":  "text",
+                           "prompt":  "Post-uninstall code block",
+                           "default":  "# PSADT4Plaster Post-uninstall code block"
+                       },
+                       {
+                           "name":  "PreRepairCodeBlock",
+                           "type":  "text",
+                           "prompt":  "Pre-repair code block",
+                           "default":  "# PSADT4Plaster Pre-repair code block"
+                       },
+                       {
+                           "name":  "RepairCodeBlock",
+                           "type":  "text",
+                           "prompt":  "Repair code block",
+                           "default":  "# PSADT4Plaster Repair code block"
+                       },
+                       {
+                           "name":  "PostRepairCodeBlock",
+                           "type":  "text",
+                           "prompt":  "Post-repair code block",
+                           "default":  "# PSADT4Plaster Post-repair code block"
+                       }
+                   ],
+    "content":  [
+                    {
+                        "type":  "file",
+                        "source":  "PSADT\\**\\*",
+                        "destination":  "PSADT4-${InstallTitleFileName}\\"
+                    },
+                    {
+                        "type":  "file",
+                        "source":  "PSADT\\Assets\\*",
+                        "destination":  "PSADT4-${InstallTitleFileName}\\Assets\\"
+                    },
+                    {
+                        "type":  "file",
+                        "source":  "PSADT\\Files\\*",
+                        "destination":  "PSADT4-${InstallTitleFileName}\\Files\\"
+                    },
+                    {
+                        "type":  "file",
+                        "source":  "PSADT\\PSAppDeployToolkit\\*",
+                        "destination":  "PSADT4-${InstallTitleFileName}\\PSAppDeployToolkit\\"
+                    },
+                    {
+                        "type":  "file",
+                        "source":  "PSADT\\PSAppDeployToolkit.Extensions\\*",
+                        "destination":  "PSADT4-${InstallTitleFileName}\\PSAppDeployToolkit.Extensions\\"
+                    },
+                    {
+                        "type":  "file",
+                        "source":  "PSADT\\Strings\\*",
+                        "destination":  "PSADT4-${InstallTitleFileName}\\Strings\\"
+                    },
+                    {
+                        "type":  "file",
+                        "source":  "PSADT\\SupportFiles\\*",
+                        "destination":  "PSADT4-${InstallTitleFileName}\\SupportFiles\\"
+                    },
+                    {
+                        "type":  "templateFile",
+                        "source":  "PSADT\\Invoke-AppDeployToolkit.ps1",
+                        "destination":  "PSADT4-${InstallTitleFileName}\\Invoke-AppDeployToolkit.ps1",
+                        "encoding":  "UTF8"
+                    },
+                    {
+                        "type":  "templateFile",
+                        "source":  "PSADT\\Config\\Config.psd1",
+                        "destination":  "PSADT4-${InstallTitleFileName}\\Config\\Config.psd1",
+                        "encoding":  "UTF8"
+                    }
+                ]
+}
